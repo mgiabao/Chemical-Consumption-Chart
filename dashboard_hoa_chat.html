@@ -1,414 +1,295 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Giám sát tiêu thụ hóa chất — Sadesa VN</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js"></script>
-<style>
-  :root{
-    --bg:#14171a;
-    --panel:#1c2024;
-    --panel-2:#20262b;
-    --line:#2c3338;
-    --ink:#e7e9ea;
-    --ink-dim:#8b959c;
-    --teal:#3fb6a8;
-    --amber:#d9963f;
-    --red:#c85c4e;
-    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    --sans: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0; background:var(--bg); color:var(--ink);
-    font-family:var(--sans); -webkit-font-smoothing:antialiased;
-  }
-  .wrap{max-width:1180px; margin:0 auto; padding:28px 24px 60px;}
+<!doctype html>
+<html lang="vi" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="mobile-web-app-capable" content="yes"><title>FT & Hóa chất · Consumed Log</title><meta name="description" content="Theo dõi FT và hóa chất từ Consumed_Log theo thời gian, công thức và loại da."><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f766e'/%3E%3Cpath d='M8 23V9h16M8 15h12' stroke='white' stroke-width='3' fill='none'/%3E%3C/svg%3E"><style>
+:root{color-scheme:dark;--bg:#0a101b;--surface:#111b2b;--surface2:#162236;--text:#eef4fd;--muted:#94a7bf;--line:#253349;--teal:#45ddbb;--blue:#7aa8ff;--orange:#ffcb80;--shadow:0 12px 40px #0002;font-family:Inter,"Segoe UI",Arial,sans-serif;color:var(--text);background:var(--bg);font-size:16px}html[data-theme=light]{color-scheme:light;--bg:#f0f4fa;--surface:#fff;--surface2:#f3f6fb;--text:#172b43;--muted:#596e88;--line:#dbe3ee;--teal:#087f6b;--blue:#386bcc;--orange:#a76a16;--shadow:0 12px 30px #15366308}*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button,input,select{color:var(--text);background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:10px 13px;min-height:42px}button{cursor:pointer;font-weight:600;transition:background .18s,transform .18s,border-color .18s}button:hover{background:color-mix(in srgb,var(--teal) 10%,var(--surface));border-color:var(--teal);transform:translateY(-1px)}button:active{transform:translateY(1px)}button:disabled{opacity:.4;cursor:default;transform:none}a{color:var(--teal);text-decoration:none}a:hover{text-decoration:underline}:focus-visible{outline:2px solid var(--teal);outline-offset:4px}header{max-width:1536px;margin:auto;padding:30px 30px 20px;display:flex;justify-content:space-between;align-items:center;gap:20px}.brand{display:flex;gap:15px;align-items:center}.logo{width:48px;height:48px;display:grid;place-items:center;background:var(--teal);color:var(--bg);border-radius:14px;font-weight:850;font-size:20px}.eyebrow{font-size:12px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}h1{font-size:27px;margin:0;font-weight:650;letter-spacing:-.6px}.header-actions{display:flex;align-items:center;gap:20px;font-size:14px}#themeToggle{font-size:14px;min-width:104px}main{max-width:1536px;margin:auto;padding:0 30px 30px}.topline{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:0 0 22px;flex-wrap:wrap}.status{font-size:13px;color:var(--muted)}.status.ok:before{content:'●';color:var(--teal);margin-right:8px}.actions{display:flex;align-items:center;gap:14px;font-size:14px}.actions label{display:flex;align-items:center;gap:8px}input[type=checkbox]{width:17px;height:17px;min-height:0;accent-color:var(--teal)}#refresh{color:var(--teal);font-size:14px}#refresh:disabled{animation:pulse 1s infinite}.filters{display:grid;grid-template-columns:1fr 1fr 1.15fr 1.8fr auto;gap:14px;align-items:end;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:19px 20px}.field{display:flex;flex-direction:column;gap:8px;min-width:0}.field label{font-size:13px;font-weight:600;color:var(--muted)}select,input{width:100%;min-width:0;font-size:14px}.filters button{font-size:14px}.presets{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 0 22px}.presets button{font-size:13px;min-height:32px;padding:6px 11px;background:transparent;border-color:transparent;color:var(--muted)}.presets button.active{color:var(--teal);background:color-mix(in srgb,var(--teal) 10%,transparent);border-color:color-mix(in srgb,var(--teal) 30%,transparent)}.presets span{font-size:12px;color:var(--muted);margin-left:auto}.notice{padding:14px 18px;border:1px solid color-mix(in srgb,var(--orange) 45%,var(--surface));background:color-mix(in srgb,var(--orange) 8%,var(--surface));color:var(--orange);border-radius:10px;margin-bottom:18px;font-size:14px;line-height:1.6}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:26px}.kpi{--accent:var(--teal);background:var(--surface);border:1px solid var(--line);padding:22px;border-radius:14px;position:relative;overflow:hidden;box-shadow:var(--shadow);transition:transform .2s,border-color .2s}.kpi:hover{transform:translateY(-3px);border-color:var(--accent)}.kpi:after{content:'';position:absolute;right:0;top:0;height:3px;width:38%;background:var(--accent)}.kpi:nth-child(2){--accent:var(--blue)}.kpi:nth-child(3){--accent:var(--orange)}.kpi:nth-child(4){--accent:#b19eff}.kpi .label{font-size:14px;color:var(--muted);display:flex;align-items:center;justify-content:space-between}.metric-icon{color:var(--accent);display:grid;place-items:center;width:30px;height:30px;border:1px solid var(--line);border-radius:9px;font-size:16px}.value{font-size:clamp(26px,2.5vw,38px);font-weight:650;letter-spacing:-1px;margin:14px 0 10px;font-variant-numeric:tabular-nums}.unit{font-size:14px;color:var(--muted);font-weight:400;letter-spacing:0}.sub{font-size:13px;color:var(--muted);line-height:1.6}.tabs{display:flex;gap:5px;padding:5px;background:var(--surface);border:1px solid var(--line);border-radius:12px;width:fit-content;max-width:100%;overflow:auto;margin-bottom:22px}.tabs button{border:0;background:transparent;color:var(--muted);font-size:14px;white-space:nowrap;padding:11px 20px;min-height:42px}.tabs button[aria-selected=true]{background:var(--surface2);color:var(--teal);box-shadow:0 2px 8px #0001}.tabs button:hover{transform:none}.grid{display:grid;grid-template-columns:1.65fr 1fr;gap:20px}.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px;min-width:0;box-shadow:var(--shadow)}.panelhead{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}h2{font-size:18px;font-weight:600;letter-spacing:-.2px;margin:0 0 7px}h3{font-size:16px;font-weight:600;margin:0}.panelhead select{width:auto;max-width:100%;font-size:14px}.legend{display:flex;gap:16px;font-size:13px;color:var(--muted);margin-bottom:6px}.legend span:before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--teal);margin-right:7px}.legend span:nth-child(2):before{background:var(--blue)}svg.chart{width:100%;height:280px;overflow:visible}.chart text{font-family:inherit;fill:var(--muted);font-size:12px}.chart-grid{stroke:var(--line)}.trendline{stroke-dasharray:2200;stroke-dashoffset:0;animation:draw 1.1s ease-out}.chart-point{cursor:pointer;outline:none}.chart-point .point-dot{opacity:0;transition:opacity .15s}.chart-point:hover .point-dot,.chart-point:focus .point-dot{opacity:1}.chart-point:focus .point-hit{stroke:var(--teal);stroke-width:1}.chart-hint{font-size:12px;color:var(--muted);margin-top:6px}.empty{display:flex;align-items:center;justify-content:center;min-height:190px;text-align:center;line-height:1.6;color:var(--muted);padding:25px}.barrow{margin:0 0 17px;display:block;width:100%;padding:6px 0;background:transparent;border:0;text-align:left;min-height:0}.barrow:hover{background:transparent;border:0;transform:translateX(3px)}.barlabels{display:flex;justify-content:space-between;gap:12px;font-size:14px;margin-bottom:9px}.barlabels span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.barlabels strong{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}.track{background:var(--surface2);border-radius:5px;height:8px;overflow:hidden}.bar{height:100%;background:var(--teal);border-radius:5px;transform-origin:left;animation:grow .65s cubic-bezier(.2,.8,.2,1) both}.barrow:nth-child(2n) .bar{background:var(--blue)}#chemChart .bar{background:var(--blue)}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:14px;white-space:nowrap}th{font-weight:500;color:var(--muted);background:var(--surface2);text-align:left;font-size:12px;letter-spacing:.15px}td,th{padding:14px 12px;border-bottom:1px solid var(--line)}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}tbody tr{transition:background .15s}tbody tr:hover{background:var(--surface2)}.code{font-family:ui-monospace,Consolas,monospace;font-size:13px;color:var(--teal)}button.code{border:0;min-height:0;padding:0;background:transparent;font-weight:500}button.code:hover{text-decoration:underline;transform:none}.tag{font-size:12px;background:color-mix(in srgb,var(--teal) 12%,var(--surface));color:var(--teal);border-radius:5px;padding:5px 8px}.tag.chem{background:color-mix(in srgb,var(--blue) 12%,var(--surface));color:var(--blue)}.pager{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;font-size:14px;color:var(--muted)}.pager div{display:flex;gap:8px}.pager button{font-size:14px}.smallfilters{display:flex;gap:12px}.smallfilters input{max-width:300px}.smallfilters select{max-width:300px}.foot{font-size:13px;color:var(--muted);line-height:1.7;margin:8px 2px 24px}details{margin-top:12px}summary{cursor:pointer;font-size:14px;font-weight:600}.method{max-width:950px;font-size:14px;line-height:1.8;padding-top:10px}.selection{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:-8px 0 18px}.chip{font-size:12px;min-height:28px;padding:4px 9px;border-color:color-mix(in srgb,var(--teal) 25%,var(--line));color:var(--teal);background:color-mix(in srgb,var(--teal) 6%,var(--surface))}.tooltip{position:fixed;pointer-events:none;z-index:50;max-width:260px;background:var(--surface2);border:1px solid var(--line);border-radius:9px;padding:12px 15px;box-shadow:0 8px 25px #0005;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-line}section[role=tabpanel]{animation:enter .28s ease-out}.kpi.updated .value{animation:pulse .55s ease-out}[hidden]{display:none!important}@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes enter{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}@keyframes draw{from{stroke-dashoffset:2200}to{stroke-dashoffset:0}}@keyframes pulse{50%{opacity:.55}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}@media(min-width:1450px){header,main{padding-left:38px;padding-right:38px}}@media(max-width:1000px){.filters{grid-template-columns:1fr 1fr}.filters button{grid-column:span 2}.grid{grid-template-columns:1fr}.kpis{grid-template-columns:1fr 1fr}.value{font-size:32px}}@media(max-width:600px){header{padding:22px 16px;align-items:flex-start;flex-wrap:wrap}.header-actions{width:100%;justify-content:space-between}main{padding:0 16px 20px}h1{font-size:23px}.kpis{gap:10px}.kpi{padding:15px}.value{font-size:26px}.metric-icon{display:none}.filters{gap:12px;padding:15px}.panel{padding:17px}.smallfilters{flex-direction:column;width:100%}.presets span{margin-left:0;width:100%;padding-top:5px}.tabs{width:100%}.tabs button{padding:9px 13px}.actions{flex-wrap:wrap}.barlabels{font-size:13px}.grid{gap:0}.status{line-height:1.7}.kpi .label{font-size:13px}.chart{min-height:240px}}
 
-  header{
-    display:flex; justify-content:space-between; align-items:flex-end;
-    border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:22px;
-    flex-wrap:wrap; gap:14px;
-  }
-  header h1{
-    font-size:22px; font-weight:600; margin:0 0 4px; letter-spacing:.2px;
-  }
-  header p{margin:0; color:var(--ink-dim); font-size:13px;}
-  .status{
-    display:flex; align-items:center; gap:10px; font-family:var(--mono); font-size:12px; color:var(--ink-dim);
-  }
-  .dot{width:7px; height:7px; border-radius:50%; background:var(--teal); flex:none;}
-  .dot.err{background:var(--red);}
-  button#refreshBtn{
-    background:var(--panel-2); border:1px solid var(--line); color:var(--ink);
-    padding:7px 14px; border-radius:5px; font-size:12px; cursor:pointer; font-family:var(--sans);
-  }
-  button#refreshBtn:hover{border-color:var(--teal); color:var(--teal);}
+.picker{position:relative}.picker-trigger{text-align:left;display:block;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.picker-trigger[aria-expanded=true]{border-color:var(--teal)}.picker-popup{position:absolute;top:calc(100% + 9px);right:0;z-index:40;width:max(100%,340px);max-width:calc(100vw - 38px);background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:14px;box-shadow:0 16px 55px #0008;animation:enter .15s ease-out}.pick-list{max-height:275px;overflow:auto;margin:10px -4px;padding:0 4px}.pick-option{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:7px;cursor:pointer;font-size:14px;line-height:1.5}.pick-option:hover{background:var(--surface2)}.pick-option input{flex-shrink:0}.pick-option small{display:block;font-weight:400;color:var(--muted)}.pick-actions,.pick-footer{display:flex;align-items:center;gap:8px}.pick-actions button{font-size:12px;min-height:30px;padding:5px 8px;background:transparent}.pick-footer{border-top:1px solid var(--line);padding-top:12px;justify-content:flex-end}.pick-footer span{font-size:12px;color:var(--muted);margin-right:auto}.pick-footer button{font-size:13px;min-height:35px;padding:6px 10px}.primary{background:var(--teal);color:var(--bg);border-color:var(--teal)}.filter-buttons{display:flex;gap:7px;flex-wrap:wrap}.filter-buttons button{font-size:13px;padding:10px}.presets .filter-help{margin-left:0;margin-right:auto;font-size:12px}.compare-selects{display:flex;align-items:end;gap:12px}.compare-selects .field{min-width:150px}.compare-selects select{width:100%}.scope-note{border-left:3px solid var(--blue);padding:11px 15px;background:var(--surface2);border-radius:0 8px 8px 0;font-size:14px;color:var(--muted);line-height:1.6}.compare-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.compare-card{padding:18px;border:1px solid var(--line);background:var(--surface2);border-radius:12px}.compare-card h3{font-size:14px;color:var(--muted);margin-bottom:16px}.month-pair{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.month-pair strong{font-size:25px;font-weight:600;letter-spacing:-.6px}.month-pair small{font-size:13px;color:var(--muted)}.delta{font-size:14px;color:var(--text);font-variant-numeric:tabular-nums}.delta-pill{display:inline-block;background:var(--surface);border:1px solid var(--line);padding:3px 7px;border-radius:5px;font-size:12px;margin-left:7px}.compare-row{display:grid;grid-template-columns:210px 1fr;gap:20px;padding:15px 0;border-bottom:1px solid var(--line);align-items:center}.compare-row .row-label{font-size:14px;overflow-wrap:anywhere}.paired-bars{display:grid;gap:7px}.paired-line{display:grid;grid-template-columns:1fr 90px;align-items:center;gap:12px}.paired-line span{text-align:right;font-size:13px;font-variant-numeric:tabular-nums}.paired-line .track{height:10px}.paired-line:first-child .bar{background:var(--blue)}.paired-line:last-child .bar{background:var(--teal)}#compareBars{margin:22px 0 28px}#compareLegend span:first-child:before{background:var(--blue)}#compareLegend span:nth-child(2):before{background:var(--teal)}.compare-table-title{font-size:13px;color:var(--muted);margin-bottom:10px}@media(min-width:1001px){.filters{grid-template-columns:1fr 1fr 1.1fr 1.6fr auto}}@media(max-width:1000px){.filter-buttons{grid-column:span 2}.filters .picker button{grid-column:auto}.compare-kpis{grid-template-columns:1fr}.compare-card{display:block}}@media(max-width:600px){.picker-popup{position:fixed;top:15vh;left:16px;right:16px;width:auto;max-width:none;z-index:80;box-shadow:0 0 0 100vmax #0009}.pick-list{max-height:40vh}.compare-selects{width:100%;gap:8px}.compare-selects .field{min-width:0;flex:1}.compare-row{grid-template-columns:1fr;gap:12px}.presets .filter-help{width:100%}}
 
-  .tabs{display:flex; gap:6px; margin-bottom:20px;}
-  .tab{
-    padding:7px 14px; border-radius:5px; font-size:13px; cursor:pointer;
-    background:var(--panel); border:1px solid var(--line); color:var(--ink-dim);
-  }
-  .tab.active{color:var(--bg); background:var(--teal); border-color:var(--teal); font-weight:600;}
+.chemical-workspace{display:grid;grid-template-columns:300px minmax(0,1fr);gap:20px;align-items:start}.chemical-nav{position:sticky;top:18px;padding:18px}.chemical-list{max-height:660px;overflow:auto;margin:10px -6px 0;padding:0 6px}.chemical-main{min-width:0}.chem-item{width:100%;text-align:left;padding:13px 12px;display:block;margin:6px 0;background:transparent;border-color:transparent}.chem-item:hover{transform:none}.chem-item[aria-pressed=true]{border-color:var(--teal);background:color-mix(in srgb,var(--teal) 8%,var(--surface))}.chem-item-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}.chem-item-name{font-size:13px;font-weight:400;color:var(--muted);margin-top:6px;line-height:1.5;white-space:normal}.chem-item-qty{font-size:12px;font-weight:400;color:var(--muted)}.all-chem{width:100%;margin-top:10px;font-size:13px;min-height:35px;background:transparent;color:var(--teal)}.chem-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}.chem-stat{padding:16px;border:1px solid var(--line);border-radius:10px;background:var(--surface2)}.chem-stat strong{display:block;font-size:27px;font-weight:600;letter-spacing:-.5px;margin:10px 0 5px;font-variant-numeric:tabular-nums}.chem-stat .sub{font-size:12px}.chem-focus td{background:color-mix(in srgb,var(--teal) 8%,var(--surface))}.chem-selected{display:inline-block;padding:4px 7px;border-radius:5px;background:color-mix(in srgb,var(--teal) 12%,var(--surface));color:var(--teal)}.ratio-cell{display:inline-flex;align-items:center;gap:8px}.ratio-track{width:65px;height:5px;background:var(--surface2);border-radius:3px}.ratio-fill{height:100%;background:var(--teal);border-radius:3px}.ft-detail-button{font-size:13px;min-height:32px;padding:5px 9px;color:var(--teal)}#chemTable .tablewrap{max-height:580px}#chemTable th{position:sticky;top:0;z-index:1}#chemRecipePanel{animation:enter .25s ease-out}.chemical-main .panelhead h2{font-size:22px}#chemCode{color:var(--teal);margin-bottom:9px}#chemGuide{font-size:13px}@media(max-width:1150px){.chemical-workspace{grid-template-columns:250px minmax(0,1fr)}.chem-metrics{grid-template-columns:1fr}.chem-stat{display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px}.chem-stat strong{margin:0}.chem-stat .sub{grid-column:1/-1}}@media(max-width:760px){.chemical-workspace{grid-template-columns:1fr}.chemical-nav{position:static}.chemical-list{max-height:235px}.chem-metrics{grid-template-columns:1fr}.chemical-main .panel{padding:16px}}
 
-  .kpis{
-    display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:22px;
-  }
-  .kpi{
-    background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:16px 18px;
-  }
-  .kpi .label{font-size:12px; color:var(--ink-dim); margin-bottom:8px;}
-  .kpi .value{font-family:var(--mono); font-size:24px; font-weight:600; line-height:1.1;}
-  .kpi .value small{font-size:13px; font-weight:400; color:var(--ink-dim); margin-left:4px;}
-  .kpi .sub{font-size:11px; color:var(--ink-dim); margin-top:6px;}
+/* Minimal dashboard refinements */
+.leather-selected{border-color:var(--teal)!important;background:color-mix(in srgb,var(--teal) 10%,var(--surface))!important}
+.leather-selected .bar{height:12px}
+.selected-mark{color:var(--teal);font-size:11px;font-weight:600;margin-left:6px}
+.ft-filters{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:18px;padding:14px;background:var(--surface2);border:1px solid var(--line);border-radius:10px}
+.ft-filters .field{min-width:180px;flex:1}
+.ft-filters .field:first-child{flex:1.4}
+.ft-filters input,.ft-filters select{min-height:38px}
+.stock-summary{display:flex;align-items:baseline;gap:10px;margin-bottom:18px}
+.stock-summary strong{font-size:30px;font-weight:650}
+.stock-summary span{color:var(--muted);font-size:13px}
+.stock-table td.remain{font-weight:650;color:var(--teal)}
+@media(max-width:700px){.ft-filters{display:grid;grid-template-columns:1fr}.ft-filters .field{min-width:0}.stock-summary{flex-wrap:wrap}}
 
-  .grid{display:grid; grid-template-columns:1.6fr 1fr; gap:16px; margin-bottom:16px;}
-  .panel{
-    background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:18px 20px;
-  }
-  .panel h2{font-size:13px; font-weight:600; margin:0 0 14px; color:var(--ink);}
-  .panel .chart-wrap{position:relative; height:280px;}
+/* ===== Mobile / iPhone Safari ===== */
+@media (max-width:700px){
+  html{font-size:15px;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+  body{margin:0;min-width:0;overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom);}
+  header{padding:calc(12px + env(safe-area-inset-top)) 14px 12px;gap:10px;position:sticky;top:0;z-index:50;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
+  .brand{min-width:0;gap:10px}.logo{width:38px;height:38px;flex:0 0 38px}.eyebrow{font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.brand h1{font-size:18px;white-space:nowrap}
+  .header-actions{margin-left:auto}.header-actions button{min-height:40px;padding:8px 10px;font-size:12px}
+  main{width:auto;max-width:none;margin:0;padding:10px 12px 28px;}
+  .topline{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:10px}.status{font-size:11px;line-height:1.35}.actions{width:100%;display:flex;justify-content:space-between;gap:8px}.actions label{font-size:11px;min-height:40px;display:flex;align-items:center}.actions button,#refresh{min-height:40px;padding:8px 13px;}
+  .filters{grid-template-columns:1fr 1fr;gap:9px;padding:12px;border-radius:12px;}
+  .filters .field label{font-size:11px}.filters input{min-height:42px;font-size:15px;box-sizing:border-box;border-radius:10px;}
+  .presets{padding:9px 0 12px;gap:6px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .presets::-webkit-scrollbar{display:none}.presets button{white-space:nowrap;min-height:38px;padding:7px 10px;border:1px solid var(--line);border-radius:9px}.presets .filter-help{display:none}.presets span{display:none}
+  .selection{font-size:11px;line-height:1.35;padding:9px 11px;margin-bottom:10px;overflow:hidden}
+  .tabs{display:flex;gap:7px;overflow-x:auto;flex-wrap:nowrap;margin:0 -12px 12px;padding:0 12px 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:66px;z-index:40;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+  .tabs::-webkit-scrollbar{display:none}.tabs button{flex:0 0 auto;min-height:42px;padding:9px 13px;font-size:12px;border-radius:10px;white-space:nowrap;}
+  .grid,.cards,.kpis,.dashboard-grid,.chart-grid{grid-template-columns:1fr!important;}
+  .card,.panel,.chart,.table-wrap,.notice{border-radius:12px;}
+  .card{padding:13px}.card h2,.panel h2{font-size:15px}.subtle,.muted{font-size:11px}
+  .kpi{padding:13px}.kpi .value{font-size:24px}
+  canvas{max-width:100%!important;height:auto!important;}
+  .table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{min-width:620px;font-size:12px}.table-wrap td,.table-wrap th{padding:9px 8px;white-space:nowrap}
+  .ft-filters{display:grid!important;grid-template-columns:1fr!important;gap:8px;padding:11px}.ft-filters input,.ft-filters select{min-height:42px;font-size:15px}
+  .stock-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px}.stock-summary>*{min-width:0}.stock-search input{min-height:42px;font-size:15px}
+  button,select,input{touch-action:manipulation}button{min-height:40px}
+  .modal,.picker{max-width:calc(100vw - 24px)!important}
+}
+@media (max-width:390px){
+  main{padding-left:9px;padding-right:9px}.tabs{margin-left:-9px;margin-right:-9px;padding-left:9px;padding-right:9px}.filters{grid-template-columns:1fr;padding:10px}.actions{align-items:stretch}.actions label{font-size:10px}.brand h1{font-size:16px}.header-actions button{font-size:11px}
+}
 
-  table{width:100%; border-collapse:collapse; font-size:12.5px;}
-  th{
-    text-align:left; color:var(--ink-dim); font-weight:500; font-size:11px;
-    padding:6px 8px; border-bottom:1px solid var(--line);
-  }
-  td{padding:6px 8px; border-bottom:1px solid #23282c; font-family:var(--mono);}
-  td.name{font-family:var(--sans);}
-  tr:last-child td{border-bottom:none;}
-
-  .search{
-    width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--ink);
-    padding:8px 10px; border-radius:5px; font-size:13px; margin-bottom:12px;
-  }
-  .search::placeholder{color:var(--ink-dim);}
-
-  .log-panel{margin-top:16px;}
-  .log-table-wrap{max-height:360px; overflow-y:auto;}
-  .qty-out{color:var(--amber);}
-  .qty-in{color:var(--teal);}
-
-  .empty{color:var(--ink-dim); font-size:13px; padding:30px 0; text-align:center;}
-  .err-box{
-    background:#2a1d1c; border:1px solid #4a2c28; color:#e3a89e; padding:14px 16px;
-    border-radius:6px; font-size:13px; margin-bottom:20px; display:none;
-  }
-  @media (max-width:820px){
-    .kpis{grid-template-columns:repeat(2,1fr);}
-    .grid{grid-template-columns:1fr;}
-  }
-</style>
-</head>
-<body>
-<div class="wrap">
-
-  <header>
-    <div>
-      <h1>Giám sát tiêu thụ hóa chất</h1>
-      <p>Sadesa VN — nguồn dữ liệu: Consumed_Log (Google Sheet, cập nhật trực tiếp)</p>
-    </div>
-    <div style="display:flex; align-items:center; gap:12px;">
-      <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Đang tải…</span></div>
-      <button id="refreshBtn">Tải lại</button>
-    </div>
-  </header>
-
-  <div class="err-box" id="errBox"></div>
-
-  <div class="tabs">
-    <div class="tab" data-range="7">7 ngày</div>
-    <div class="tab active" data-range="30">30 ngày</div>
-    <div class="tab" data-range="90">90 ngày</div>
-    <div class="tab" data-range="all">Tất cả</div>
-  </div>
-
-  <div class="kpis">
-    <div class="kpi">
-      <div class="label">Tổng KG tiêu thụ trong kỳ</div>
-      <div class="value" id="kpiTotal">—</div>
-      <div class="sub" id="kpiTotalSub">&nbsp;</div>
-    </div>
-    <div class="kpi">
-      <div class="label">Số mẻ (batch) sản xuất</div>
-      <div class="value" id="kpiBatches">—</div>
-      <div class="sub" id="kpiBatchesSub">&nbsp;</div>
-    </div>
-    <div class="kpi">
-      <div class="label">Hóa chất tiêu thụ nhiều nhất</div>
-      <div class="value" id="kpiTop" style="font-size:16px;">—</div>
-      <div class="sub" id="kpiTopSub">&nbsp;</div>
-    </div>
-    <div class="kpi">
-      <div class="label">Trung bình / ngày sản xuất</div>
-      <div class="value" id="kpiAvg">—</div>
-      <div class="sub" id="kpiAvgSub">&nbsp;</div>
-    </div>
-  </div>
-
-  <div class="grid">
-    <div class="panel">
-      <h2>Tổng KG tiêu thụ theo ngày</h2>
-      <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
-    </div>
-    <div class="panel">
-      <h2>Top 10 hóa chất tiêu thụ nhiều nhất (kg)</h2>
-      <div class="chart-wrap"><canvas id="topChart"></canvas></div>
-    </div>
-  </div>
-
-  <div class="panel">
-    <h2>Tiêu thụ theo công thức (Formula)</h2>
-    <div class="chart-wrap" style="height:240px;"><canvas id="formulaChart"></canvas></div>
-  </div>
-
-  <div class="panel log-panel">
-    <h2>Nhật ký giao dịch (mới nhất trước)</h2>
-    <input class="search" id="searchBox" placeholder="Tìm theo tên hóa chất, mã, công thức, người nhập...">
-    <div class="log-table-wrap">
-      <table id="logTable">
-        <thead>
-          <tr>
-            <th>Ngày</th><th>Loại</th><th>Mã</th><th>Tên</th><th>SL</th><th>Công thức</th><th>Người nhập</th>
-          </tr>
-        </thead>
-        <tbody id="logBody"></tbody>
-      </table>
-    </div>
-  </div>
-
+.ft-detail{margin-top:18px;padding:18px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}
+.ft-detail[hidden]{display:none}
+.ft-detail-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.ft-detail-title{font-size:18px;font-weight:800}
+.ft-detail-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:12px 0 18px}
+.ft-detail-card{padding:14px;border-radius:12px;background:var(--surface);border:1px solid var(--border)}
+.ft-detail-card .label{font-size:12px;color:var(--muted);margin-bottom:5px}.ft-detail-card strong{font-size:18px}
+.ft-detail-table{width:100%;overflow:auto}
+@media(max-width:700px){.ft-detail{padding:14px}.ft-detail-grid{grid-template-columns:1fr}.ft-detail-head{align-items:center}}
+.system-status{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-weight:700;font-size:12px;white-space:nowrap}.system-done{color:#0b7a4b;background:#e8f7ef;border:1px solid #b9e8d0}.system-missing{color:#b42318;background:#fff0ef;border:1px solid #f2c2be}.muted{opacity:.55}
+</style></head><body>
+<header><div class="brand"><div class="logo">FT</div><div><div class="eyebrow">Consumed Log / Live dashboard</div><h1>FT & Hóa chất</h1></div></div><div class="header-actions"><button id="themeToggle" type="button" aria-label="Chuyển sang giao diện sáng">☀ Sáng</button></div></header>
+<main><div class="topline"><div id="status" class="status" role="status">Đang kết nối Consumed_Log…</div><div class="actions"><label><input id="auto" type="checkbox" checked>Tự cập nhật mỗi 60 giây</label><button id="refresh">Làm mới</button></div></div>
+<div class="filters"><div class="field"><label for="from">Từ ngày</label><input type="date" id="from"></div><div class="field"><label for="to">Đến ngày</label><input type="date" id="to"></div><input type="hidden" id="leather"><input type="hidden" id="formula"></div>
+<div class="presets"><span class="filter-help">Chọn nhiều mục rồi bấm Áp dụng</span><button data-range="all">Toàn bộ</button><button data-range="month">Tháng dữ liệu mới nhất</button><button data-range="30">30 ngày gần nhất</button><span id="rangeInfo">Ngày theo Key-in Date</span></div>
+<div class="selection" id="selection" aria-label="Bộ lọc đang áp dụng" hidden></div><div id="alert" class="notice" hidden role="alert"></div><div id="quality" class="notice" hidden></div>
+<div class="kpis"><div class="kpi"><div class="label">FT nhập / pha chế<span class="metric-icon" aria-hidden="true">↙</span></div><div class="value" id="ftKpi">—</div><div class="sub" id="ftSub">Tổng Qty của FT_IN</div></div><div class="kpi"><div class="label">Hóa chất xuất dùng<span class="metric-icon" aria-hidden="true">↗</span></div><div class="value" id="chemKpi">—</div><div class="sub" id="chemSub">Lượng xuất ròng từ CHEM_OUT</div></div><div class="kpi"><div class="label">Công thức FT<span class="metric-icon" aria-hidden="true">ƒ</span></div><div class="value" id="formulaKpi">—</div><div class="sub" id="formulaSub">FT khác nhau trong kỳ</div></div><div class="kpi"><div class="label">Loại da<span class="metric-icon" aria-hidden="true">◈</span></div><div class="value" id="leatherKpi">—</div><div class="sub" id="leatherSub">Đọc từ Transaction ID</div></div></div>
+<div class="tabs" role="tablist" aria-label="Nội dung dashboard"><button role="tab" id="tab-ft" aria-controls="ft" aria-selected="true" data-tab="ft">Phân tích FT</button><button role="tab" id="tab-stock" aria-controls="stock" aria-selected="false" data-tab="stock">Tồn kho hiện tại</button><button role="tab" id="tab-records" aria-controls="records" aria-selected="false" data-tab="records">Chi tiết giao dịch FT_IN</button></div>
+<section id="overview" role="tabpanel" aria-labelledby="tab-overview" hidden><div class="grid"><div class="panel"><div class="panelhead"><div><h2>Khối lượng theo thời gian</h2><div class="sub">FT nhập và hóa chất xuất dùng · kg</div></div><select id="grain" aria-label="Nhóm thời gian"><option value="month">Theo tháng</option><option value="week">Theo tuần</option><option value="day">Theo ngày</option></select></div><div class="legend"><span>FT nhập</span><span>Hóa chất xuất</span></div><div id="trend"></div><div class="chart-hint">Rê chuột để xem số liệu · Bấm một mốc để lọc khoảng thời gian</div></div><div class="panel"><div class="panelhead"><div><h2>FT theo loại da</h2><div class="sub">Khối lượng nhập · kg · Bấm loại da để lọc dashboard</div></div></div><div id="leatherChart"></div></div></div></section>
+<section id="comparison" role="tabpanel" aria-labelledby="tab-comparison" hidden hidden><div class="panel"><div class="panelhead"><div><h2>So sánh theo tháng</h2><div class="sub">Chọn hai tháng để xem biến động khối lượng và công thức</div></div><div class="compare-selects"><div class="field"><label for="monthA">Tháng gốc</label><select id="monthA"></select></div><button id="swapMonths" title="Đổi chỗ hai tháng" aria-label="Đổi chỗ hai tháng">⇄</button><div class="field"><label for="monthB">Tháng đối chiếu</label><select id="monthB"></select></div></div></div><div class="scope-note">Áp dụng bộ lọc <strong>loại da và FT</strong> ở trên. Phần này dùng hai tháng riêng, không dùng Từ ngày / Đến ngày. Các thẻ tổng quan phía trên vẫn theo khoảng ngày đã chọn.</div><div id="monthCoverage" class="sub" style="margin:16px 0"></div><div class="compare-kpis" id="compareKpis"></div></div><div class="panel"><div class="panelhead"><div><h2>Biến động chi tiết</h2><div class="sub">Chênh lệch = tháng đối chiếu − tháng gốc · Màu thể hiện tháng, không đánh giá tốt/xấu</div></div><div class="smallfilters"><select id="compareGroup" aria-label="Nhóm so sánh"><option value="ft">Theo FT</option><option value="chemical">Theo hóa chất</option><option value="leather">Theo loại da</option></select><select id="compareMetric" aria-label="Chỉ tiêu so sánh"><option value="ft">FT nhập · kg</option><option value="chem">Hóa chất xuất · kg</option></select></div></div><div class="legend" id="compareLegend"></div><div id="compareBars"></div></div></section>
+<section id="ft" role="tabpanel" aria-labelledby="tab-ft" hidden>
+<div class="panel">
+<div class="panelhead"><div><h2>Tổng hợp công thức FT</h2><div class="sub">Nhập FT và xuất hóa chất tổng hợp riêng theo công thức</div></div></div>
+<div class="ft-filters">
+  <div class="field"><label for="ftSearch">Tìm FT / tên FT</label><input id="ftSearch" type="search" placeholder="Nhập mã hoặc tên FT…"></div>
+  <div class="field"><label for="ftLeatherFilter">Loại da</label><select id="ftLeatherFilter"><option value="">Tất cả loại da</option></select></div>
+  <div class="field"><label for="ftFormulaFilter">Công thức FT</label><select id="ftFormulaFilter"><option value="">Tất cả FT</option></select></div>
+  <button id="ftFilterReset" type="button">Xóa lọc</button>
 </div>
-
-<script>
-const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSSFB1U3WNPH3KL3HsGo7jQy6ufHe0nbcNHbOlpsgcdgUaRjveeyAzEgD8flfqs0pNdOmX_bbPscSDx/pub?gid=0&single=true&output=csv";
-
-let allRows = [];
-let currentRange = "30";
-let trendChart, topChart, formulaChart;
-
-const chartFont = { family: "-apple-system, Segoe UI, Roboto, sans-serif", size: 11 };
-Chart.defaults.color = "#8b959c";
-Chart.defaults.font = chartFont;
-Chart.defaults.borderColor = "#2c3338";
-
-function parseDate(s){
-  if(!s) return null;
-  const d = new Date(s);
-  return isNaN(d) ? null : d;
+<div id="ftTable"></div>
+<div id="ftDetail" class="ft-detail" hidden></div>
+</div></section>
+<section id="chemical" role="tabpanel" aria-labelledby="tab-chemical" hidden hidden><input type="hidden" id="chemSelect"><div class="chemical-workspace"><aside class="panel chemical-nav"><div class="panelhead"><div><h2>Hóa chất</h2><div class="sub" id="chemListCount"></div></div></div><input type="search" id="chemFind" placeholder="Tìm mã hoặc tên hóa chất…" aria-label="Tìm hóa chất"><button id="chemClear" class="all-chem">Xem tất cả hóa chất</button><div id="chemList" class="chemical-list" aria-label="Danh sách hóa chất"></div></aside><div class="chemical-main"><div class="panel"><div class="panelhead"><div><div class="eyebrow" id="chemCode">CHEMICAL INSIGHTS</div><h2 id="chemTitle">Chọn hóa chất để phân tích</h2><div class="sub" id="chemSummary">Chọn một mã trong danh sách bên trái.</div></div><button id="chemBack" hidden>‹ Danh sách FT</button></div><div id="chemMetrics" class="chem-metrics"></div><div id="chemMatchNotice" class="notice" hidden></div><div id="chemGuide" class="scope-note">Tỷ lệ thực tế = kg hóa chất ÷ kg FT của đúng các mẻ có sử dụng hóa chất × 100. Mỗi mẻ FT chỉ được tính một lần. Tỷ lệ này không thay thế định mức công thức chuẩn.</div><div id="chemTable" style="margin-top:22px"></div></div><div class="panel" id="chemRecipePanel" hidden><div class="panelhead"><div><h2 id="chemRecipeTitle">Thành phần pha FT</h2><div class="sub" id="chemRecipeSub"></div></div></div><div id="chemRecipeNote" class="scope-note"></div><div id="chemRecipeTable" style="margin-top:18px"></div><details style="margin-top:24px"><summary>Chi tiết từng mẻ của hóa chất đang chọn</summary><div id="chemBatchTable" style="margin-top:16px"></div><div class="pager"><span id="chemBatchPageInfo"></span><div><button id="chemBatchPrev">Trước</button><button id="chemBatchNext">Sau</button></div></div></details></div></div></div></section>
+<section id="stock" role="tabpanel" aria-labelledby="tab-stock" hidden>
+<div class="panel">
+  <div class="panelhead"><div><h2>Số lượng hiện tại</h2><div class="sub">Nguồn: Check sheet · lấy trực tiếp cột E (remain)</div></div>
+  <div class="smallfilters"><input id="stockSearch" type="search" placeholder="Tìm mã hoặc tên…" aria-label="Tìm số lượng hiện tại"></div></div>
+  <div class="stock-summary"><strong id="stockTotal">—</strong><span id="stockCount">Đang đọc Check sheet…</span></div>
+  <div id="stockTable"></div>
+</div>
+</section>
+<section id="records" role="tabpanel" aria-labelledby="tab-records" hidden><div class="panel"><div class="panelhead"><div><h2>Chi tiết giao dịch FT_IN</h2><div class="sub">Chỉ hiển thị giao dịch FT_IN · Qty giữ nguyên dấu từ nguồn</div></div><div class="smallfilters"><input id="search" placeholder="Tìm mã, tên, chứng từ…" aria-label="Tìm giao dịch FT_IN"></div></div><div id="recordsTable"></div><div class="pager"><span id="pageInfo"></span><div><button id="prev">Trước</button><button id="next">Sau</button></div></div></div></section>
+<div class="foot">Nguồn duy nhất: <strong>Consumed_Log</strong> · Đọc toàn bộ sheet, không phụ thuộc bộ lọc đang bật trong Google Sheets.<details><summary>Cách tính & phạm vi dữ liệu</summary><div class="method">FT nhập = tổng Qty của FT_IN. Hóa chất xuất ròng = − tổng Qty của CHEM_OUT; giao dịch hoàn có dấu ngược sẽ giảm lượng xuất. FT_OUT, nếu có, được trình bày riêng trong bảng FT. Không cộng Batch KG trên các dòng hóa chất. Số lượt FT là số dòng FT_IN, không phải số Transaction ID duy nhất. Loại da lấy từ phần trước dấu | đầu tiên của Transaction ID; giá trị thiếu được ghi Chưa xác định. Tỷ lệ hóa chất được ghép bằng Transaction ID + Formula Code, dùng Qty FT_IN dương và duy nhất của đúng mẻ; không dùng trung bình cộng các tỷ lệ. Mẻ không ghép được bị loại khỏi phép tính tỷ lệ. Dữ liệu không có diện tích da nên chưa tính g/SF. Hóa chất bao gồm cả nước nếu nguồn ghi nhận. Đơn vị khối lượng được hiểu là kg theo Batch KG. Chu kỳ đọc là 60 giây khi trang đang mở; Google có thể có độ trễ cập nhật. Khi đọc nguồn thất bại, giữ số liệu lần thành công gần nhất và hiển thị cảnh báo.</div></details></div>
+</main><div class="tooltip" id="tooltip" role="tooltip" hidden></div><script>
+'use strict';
+const SHEET_ID='1RA0dud03cWei4FllHZ8Qeg1fw1GagxOn9J3gfAiz56M',GID='0',CHECK_SHEET='Check sheet';
+const $=id=>document.getElementById(id),fmt=(v,d=2)=>new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(v),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let rows=[],filtered=[],loaded=false,busy=false,page=0,lastSuccess=null,checkRows=[],checkLoaded=false;
+const pickerItems={leather:[],formula:[]};let openPicker=null,draft=[],filterHistory=[],lastFilter={from:'',to:'',leather:'',formula:''};const chosen=id=>$(id).value?$(id).value.split('\u001f'):[];const matches=(id,v)=>!chosen(id).length||chosen(id).includes(v);
+function parseCSV(text){let result=[],row=[],cell='',quoted=false;for(let i=0;i<text.length;i++){let c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++}else quoted=!quoted}else if(c===','&&!quoted){row.push(cell);cell=''}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(x=>x!==''))result.push(row);row=[];cell=''}else cell+=c}if(quoted)throw Error('CSV chưa hoàn chỉnh');row.push(cell);if(row.some(x=>x!==''))result.push(row);return result}
+function normalize(text){const matrix=parseCSV(text.replace(/^\uFEFF/,'')),headers=matrix.shift()?.map(x=>x.trim())||[];for(const h of ['Key-in Date','Type','Item Number','Description','Qty','Formula Code','Transaction ID'])if(!headers.includes(h))throw Error('Nguồn không có cột '+h);let bad=0;const data=matrix.map((r,i)=>{const o=Object.fromEntries(headers.map((h,j)=>[h,r[j]??'']));const qty=o.Qty.trim()===''?NaN:Number(o.Qty);const date=o['Key-in Date'].trim();if(!Number.isFinite(qty)||!/^\d{4}-\d{2}-\d{2}$/.test(date)){bad++;return null}return{date,type:o.Type.trim(),item:o['Item Number'].trim(),name:o.Description,qty,ft:o['Formula Code'].trim(),ftName:o['Formula Name'],leather:o['Transaction ID'].split('|')[0].trim()||'Chưa xác định',leader:o.Leader,doc:(o['Doc No']??o['Doc Number']??o['doc.number']??o['Doc.number']??'').trim(),tx:o['Transaction ID'],remark:o.Remark,line:i+2}}).filter(Boolean);return{data,bad}}
+function normalizeCheck(text){
+  const matrix=parseCSV(text.replace(/^\uFEFF/,''));
+  if(!matrix.length) return [];
+  const headers=matrix.shift().map(x=>x.trim());
+  return matrix.map((r,i)=>{
+    const a=(r[0]??'').trim(), b=(r[1]??'').trim(), remain=Number(String(r[4]??'').replace(/,/g,'').trim());
+    return {a,b,remain,row:i+2,headers};
+  }).filter(x=>x.a||x.b||Number.isFinite(x.remain));
 }
-function fmtDate(d){
-  return d.toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit"});
-}
-function fmtNum(n){
-  return Math.round(n).toLocaleString("vi-VN");
-}
 
-async function loadData(){
-  const dot = document.getElementById("statusDot");
-  const txt = document.getElementById("statusText");
-  const errBox = document.getElementById("errBox");
-  dot.className = "dot"; txt.textContent = "Đang tải…"; errBox.style.display="none";
+const sum=(a,f)=>a.reduce((n,r)=>n+f(r),0),unique=a=>[...new Set(a)].sort();
+function aggregate(a,key,value){const m=new Map();for(const r of a){const k=key(r);m.set(k,(m.get(k)||0)+value(r))}return [...m].sort((a,b)=>b[1]-a[1])}
+function options(id,items,label){if(id==='chemSelect')return;if(id==='leather'||id==='formula'){pickerItems[id]=items;updatePickerLabel(id);return}const old=$(id).value;$(id).innerHTML='<option value="">'+label+'</option>'+items.map(([v,l])=>'<option value="'+esc(v)+'">'+esc(l)+'</option>').join('');if(items.some(x=>x[0]===old))$(id).value=old}
+
+async function loadCheckSheet(){
   try{
-    const res = await fetch(CSV_URL, {cache:"no-store"});
-    if(!res.ok) throw new Error("HTTP " + res.status);
-    const text = await res.text();
-    const parsed = Papa.parse(text, {header:true, skipEmptyLines:true});
-    allRows = parsed.data.map(r => ({
-      date: parseDate(r["Key-in Date"]),
-      type: r["Type"],
-      item: r["Item Number"],
-      desc: r["Description"],
-      qty: parseFloat(r["Qty"]) || 0,
-      formulaCode: r["Formula Code"],
-      formulaName: r["Formula Name"],
-      batchKg: parseFloat(r["Batch KG"]) || 0,
-      leader: r["Leader"],
-      docNo: r["Doc No"],
-      txId: r["Transaction ID"]
-    })).filter(r => r.date);
-
-    dot.className = "dot";
-    txt.textContent = "Cập nhật lúc " + new Date().toLocaleTimeString("vi-VN") + " · " + allRows.length + " dòng";
-    render();
+    const response=await fetch('https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/gviz/tq?sheet='+encodeURIComponent(CHECK_SHEET)+'&tqx=out:csv&_='+Date.now(),{cache:'no-store',credentials:'omit'});
+    if(!response.ok)throw Error('HTTP '+response.status);
+    checkRows=normalizeCheck(await response.text());
+    checkLoaded=true;
+    renderStock();
   }catch(e){
-    dot.className = "dot err";
-    txt.textContent = "Lỗi tải dữ liệu";
-    errBox.style.display = "block";
-    errBox.textContent = "Không tải được dữ liệu từ Google Sheet. Kiểm tra kết nối mạng, hoặc link publish có thể đã thay đổi. Chi tiết: " + e.message;
+    checkLoaded=false;
+    $('stockCount').textContent='Không đọc được Check sheet';
+    $('stockTable').innerHTML='<div class="empty">Không đọc được dữ liệu Check sheet. Kiểm tra tên sheet là “Check sheet” và quyền xem.</div>';
   }
 }
-
-function filteredRows(){
-  if(currentRange === "all") return allRows;
-  const days = parseInt(currentRange,10);
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
-  return allRows.filter(r => r.date >= cutoff);
+function renderStock(){
+  if(!checkRows.length){$('stockTotal').textContent='—';$('stockCount').textContent=checkLoaded?'0 dòng':'Đang đọc Check sheet…';$('stockTable').innerHTML=checkLoaded?'<div class="empty">Check sheet chưa có dữ liệu.</div>':'<div class="empty">Đang đọc Check sheet…</div>';return}
+  const q=($('stockSearch')?.value||'').trim().toLowerCase();
+  const data=checkRows.filter(r=>(r.a+' '+r.b).toLowerCase().includes(q));
+  const valid=checkRows.filter(r=>Number.isFinite(r.remain));
+  const total=sum(valid,r=>r.remain);
+  $('stockTotal').textContent=fmt(total,3)+' kg';
+  $('stockCount').textContent=fmt(data.length,0)+' dòng · cột E (remain)';
+  table('stockTable',[['Item Number'],['Description'],['Remain · cột E',1]],
+    data.map(r=>[esc(r.a),esc(r.b),'<span class="remain">'+(Number.isFinite(r.remain)?fmt(r.remain,3):'—')+'</span>']));
+}
+async function refresh(){if(busy)return;busy=true;$('refresh').disabled=true;$('status').textContent=loaded?'Đang cập nhật…':'Đang đọc toàn bộ Consumed_Log…';try{const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),25000);let response;try{response=await fetch('https://docs.google.com/spreadsheets/d/'+SHEET_ID+'/export?format=csv&gid='+GID+'&_='+Date.now(),{cache:'no-store',credentials:'omit',signal:controller.signal});if(!response.ok)throw Error('HTTP '+response.status);const parsed=normalize(await response.text());rows=parsed.data;$('quality').hidden=!parsed.bad;$('quality').textContent=parsed.bad+' dòng thiếu ngày hoặc Qty hợp lệ đã bị loại khỏi tính toán.';}finally{clearTimeout(timeout)}loaded=true;lastSuccess=new Date();$('alert').hidden=true;options('leather',unique(rows.map(r=>r.leather)).map(v=>[v,v]),'Tất cả loại da');const fm=new Map(rows.filter(r=>r.ft).map(r=>[r.ft,r.ftName]));options('formula',[...fm].sort().map(([v,n])=>[v,v+' · '+n]),'Tất cả FT');options('type',unique(rows.map(r=>r.type)).map(v=>[v,v]),'Tất cả giao dịch');populateFTFilters();apply();loadCheckSheet();$('status').className='status ok';$('status').textContent='Đã cập nhật '+lastSuccess.toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'})+' · '+fmt(rows.length,0)+' dòng';}catch(e){$('status').className='status';$('status').textContent=lastSuccess?'Dữ liệu gần nhất: '+lastSuccess.toLocaleString('vi-VN',{timeZone:'Asia/Ho_Chi_Minh'}):'Chưa kết nối được nguồn';$('alert').hidden=false;$('alert').textContent='Không đọc được Consumed_Log. '+(loaded?'Đang giữ dữ liệu lần thành công gần nhất. ':'')+'Kiểm tra mạng và quyền xem bảng bằng liên kết, sau đó bấm Làm mới. '+(e.name==='AbortError'?'Yêu cầu quá thời gian.':e.message);}finally{busy=false;$('refresh').disabled=false}}
+function apply(record=true){if(record)rememberFilters();page=0;const from=$('from').value,to=$('to').value;filtered=rows.filter(r=>(!from||r.date>=from)&&(!to||r.date<=to)&&matches('leather',r.leather)&&matches('formula',r.ft));const dates=rows.map(r=>r.date).sort();$('rangeInfo').textContent=dates.length?'Nguồn: '+dates[0]+' đến '+dates.at(-1)+' · '+fmt(filtered.length,0)+' dòng đang chọn':'Chưa có dữ liệu';const ft=filtered.filter(r=>r.type==='FT_IN'),chem=filtered.filter(r=>r.type==='CHEM_OUT');$('ftKpi').innerHTML=fmt(sum(ft,r=>r.qty))+' <span class="unit">kg</span>';$('chemKpi').innerHTML=chem.length?fmt(sum(chem,r=>-r.qty))+' <span class="unit">kg</span>':'—';$('ftSub').textContent=fmt(ft.length,0)+' lượt FT_IN';$('chemSub').textContent=chem.length?fmt(unique(chem.map(r=>r.item)).length,0)+' hóa chất · gồm nước nếu có':'Không có CHEM_OUT trong phạm vi chọn';$('formulaKpi').textContent=unique(filtered.map(r=>r.ft).filter(Boolean)).length;$('leatherKpi').textContent=unique(filtered.map(r=>r.leather)).length;const cm=new Map(chem.map(r=>[r.item,r.name]));options('chemSelect',[...cm].sort().map(([v,n])=>[v,v+' · '+n]),'Tất cả hóa chất');renderTrend();renderOverviewLeather();renderFT();renderChemical();renderRecords();renderStock();updateSelection();renderComparison()}
+function table(target,headers,data){$(target).innerHTML=data.length?'<div class="tablewrap"><table><thead><tr>'+headers.map((h,i)=>'<th class="'+(h[1]?'num':'')+'">'+esc(h[0])+'</th>').join('')+'</tr></thead><tbody>'+data.map(row=>'<tr>'+row.map((v,i)=>'<td class="'+(headers[i][1]?'num':'')+'">'+v+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>':'<div class="empty">Không có giao dịch phù hợp với bộ lọc.</div>'}
+function bars(target,data,limit=10,selectedValues=[]){
+  if(!data.length){$(target).innerHTML='<div class="empty">Chưa có dữ liệu phù hợp.</div>';return}
+  let max=Math.max(...data.map(x=>Math.abs(x[1])),1);
+  $(target).innerHTML=data.slice(0,limit).map(([n,v],i)=>{
+    const field=target==='chemChart'?'chemSelect':'leather',value=target==='chemChart'?n.split(' · ')[0]:n;
+    const selected=selectedValues.includes(value);
+    return '<button class="barrow '+(selected?'leather-selected':'')+'" data-filter="'+field+'" data-value="'+esc(value)+'" title="Lọc '+esc(n)+'"><div class="barlabels"><span>'+esc(n)+(selected?'<span class="selected-mark">(đã chọn)</span>':'')+'</span><strong>'+fmt(v)+' <span class="unit">kg</span></strong></div><div class="track"><div class="bar" style="width:'+Math.abs(v)/max*100+'%;animation-delay:'+i*45+'ms"></div></div></button>'
+  }).join('')
+}
+function renderOverviewLeather(){
+  const from=$('from').value,to=$('to').value,selected=chosen('leather');
+  const base=rows.filter(r=>(!from||r.date>=from)&&(!to||r.date<=to)&&matches('formula',r.ft)&&r.type==='FT_IN');
+  bars('leatherChart',aggregate(base,r=>r.leather,r=>r.qty),20,selected);
 }
 
-function render(){
-  const rows = filteredRows();
-  const outRows = rows.filter(r => r.type === "CHEM_OUT");
-  const inRows = rows.filter(r => r.type === "FT_IN");
-
-  // KPI: total consumed
-  const totalOut = outRows.reduce((s,r) => s + Math.abs(r.qty), 0);
-  document.getElementById("kpiTotal").innerHTML = fmtNum(totalOut) + "<small>kg</small>";
-  document.getElementById("kpiTotalSub").textContent = outRows.length + " lượt xuất hóa chất";
-
-  // KPI: batches produced (unique doc no in FT_IN)
-  const batchSet = new Set(inRows.map(r => r.docNo));
-  document.getElementById("kpiBatches").textContent = batchSet.size;
-  const totalBatchKg = inRows.reduce((s,r)=>s+r.qty,0);
-  document.getElementById("kpiBatchesSub").textContent = fmtNum(totalBatchKg) + " kg thành phẩm";
-
-  // KPI: top chemical
-  const byChem = {};
-  outRows.forEach(r=>{
-    const key = r.desc || r.item;
-    byChem[key] = (byChem[key]||0) + Math.abs(r.qty);
-  });
-  const topEntries = Object.entries(byChem).sort((a,b)=>b[1]-a[1]);
-  if(topEntries.length){
-    document.getElementById("kpiTop").textContent = topEntries[0][0];
-    document.getElementById("kpiTopSub").textContent = fmtNum(topEntries[0][1]) + " kg trong kỳ";
-  } else {
-    document.getElementById("kpiTop").textContent = "—";
-    document.getElementById("kpiTopSub").textContent = "";
+function groupDate(date){if($('grain').value==='month')return date.slice(0,7);if($('grain').value==='day')return date;let d=new Date(date+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10)}
+function periodEnd(d){const date=new Date(d.length===7?d+'-01T00:00:00Z':d+'T00:00:00Z');if($('grain').value==='month'){date.setUTCMonth(date.getUTCMonth()+1);date.setUTCDate(0)}else if($('grain').value==='week')date.setUTCDate(date.getUTCDate()+6);return date.toISOString().slice(0,10)}
+function renderTrend(){const m=new Map();for(const r of filtered){if(!['FT_IN','CHEM_OUT'].includes(r.type))continue;const k=groupDate(r.date),v=m.get(k)||[0,0];v[r.type==='FT_IN'?0:1]+=r.type==='FT_IN'?r.qty:-r.qty;m.set(k,v)}const a=[...m].sort((a,b)=>a[0].localeCompare(b[0]));if(!a.length){$('trend').innerHTML='<div class="empty">Không có dữ liệu trong kỳ đã chọn.</div>';return}const max=Math.max(1,...a.flatMap(x=>x[1]))*1.1,min=Math.min(0,...a.flatMap(x=>x[1])),y=v=>224-(v-min)/(max-min)*190,x=i=>a.length===1?385:78+i*620/(a.length-1);let s='<svg class="chart" viewBox="0 0 740 270" role="group" aria-label="Biểu đồ FT và hóa chất; chọn mốc để lọc thời gian"><defs><linearGradient id="ftArea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--teal)" stop-opacity=".20"/><stop offset="100%" stop-color="var(--teal)" stop-opacity="0"/></linearGradient></defs>';for(let i=0;i<=4;i++){let v=min+(max-min)*i/4;s+='<line x1="72" x2="714" y1="'+y(v)+'" y2="'+y(v)+'" class="chart-grid" stroke-dasharray="3 5"/><text x="61" y="'+(y(v)+4)+'" text-anchor="end">'+fmt(v,0)+'</text>'}const path=j=>a.map((v,i)=>(i?'L':'M')+x(i)+','+y(v[1][j])).join(' ');s+='<path d="'+path(0)+' L'+x(a.length-1)+','+y(0)+' L'+x(0)+','+y(0)+' Z" fill="url(#ftArea)"/>';for(let j=1;j>=0;j--)s+='<path class="trendline" d="'+path(j)+'" fill="none" stroke="var(--'+(j?'blue':'teal')+')" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';a.forEach(([d,v],i)=>{let start=d.length===7?d+'-01':d,tip=d+'\nFT nhập: '+fmt(v[0])+' kg\nHóa chất: '+fmt(v[1])+' kg';s+='<g class="chart-point" role="button" tabindex="0" aria-label="'+esc(tip)+'; bấm để lọc" data-from="'+start+'" data-to="'+periodEnd(d)+'" data-tip="'+esc(tip)+'"><rect class="point-hit" x="'+(x(i)-Math.min(30,310/a.length))+'" y="25" width="'+Math.min(60,620/a.length)+'" height="205" fill="transparent" rx="4"/>';v.forEach((n,j)=>{s+='<circle class="'+(a.length===1?'':'point-dot')+'" cx="'+x(i)+'" cy="'+y(n)+'" r="5" fill="var(--'+(j?'blue':'teal')+')" stroke="var(--surface)" stroke-width="2"/>'});s+='</g>';if(i%Math.ceil(a.length/6)===0||i===a.length-1)s+='<text x="'+x(i)+'" y="252" text-anchor="middle">'+esc(d)+'</text>'});$('trend').innerHTML=s+'</svg>'}
+function ftGroups(){const m=new Map();for(const r of filtered){const k=r.ft||'Chưa xác định';if(!m.has(k))m.set(k,{code:k,name:r.ftName||'',ft:0,out:0,chem:0,n:0,leathers:new Set()});const v=m.get(k);v.leathers.add(r.leather);if(r.type==='FT_IN'){v.ft+=r.qty;v.n++}if(r.type==='FT_OUT')v.out-=r.qty;if(r.type==='CHEM_OUT')v.chem-=r.qty}return [...m.values()].sort((a,b)=>b.ft-a.ft)}
+function renderFT(){
+  let a=ftGroups();
+  const q=$('ftSearch')?.value.trim().toLowerCase()||'';
+  const lf=$('ftLeatherFilter')?.value||'';
+  const ff=$('ftFormulaFilter')?.value||'';
+  if(q||lf||ff){
+    a=a.filter(r=>(!q||(r.code+' '+r.name).toLowerCase().includes(q))&&(!lf||r.leathers.has(lf))&&(!ff||r.code===ff));
   }
-
-  // KPI: avg per production day
-  const daySet = new Set(inRows.map(r => r.date.toDateString()));
-  const avg = daySet.size ? totalOut / daySet.size : 0;
-  document.getElementById("kpiAvg").innerHTML = fmtNum(avg) + "<small>kg</small>";
-  document.getElementById("kpiAvgSub").textContent = daySet.size + " ngày có sản xuất";
-
-  renderTrend(outRows);
-  renderTop(topEntries);
-  renderFormula(outRows);
-  renderLog(rows);
-}
-
-function renderTrend(outRows){
-  const byDay = {};
-  outRows.forEach(r=>{
-    const key = r.date.toISOString().slice(0,10);
-    byDay[key] = (byDay[key]||0) + Math.abs(r.qty);
-  });
-  const days = Object.keys(byDay).sort();
-  const labels = days.map(d => fmtDate(new Date(d)));
-  const values = days.map(d => byDay[d]);
-
-  if(trendChart) trendChart.destroy();
-  trendChart = new Chart(document.getElementById("trendChart"), {
-    type:"line",
-    data:{ labels, datasets:[{
-      data: values, borderColor:"#3fb6a8", backgroundColor:"rgba(63,182,168,0.12)",
-      fill:true, tension:0.25, pointRadius:2, pointBackgroundColor:"#3fb6a8"
-    }]},
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false},
-        tooltip:{ callbacks:{ label: ctx => fmtNum(ctx.parsed.y) + " kg" } } },
-      scales:{
-        x:{ grid:{display:false} },
-        y:{ grid:{color:"#22282c"}, ticks:{ callback:v=>fmtNum(v) } }
-      }
-    }
-  });
-}
-
-function renderTop(topEntries){
-  const top10 = topEntries.slice(0,10);
-  if(topChart) topChart.destroy();
-  topChart = new Chart(document.getElementById("topChart"), {
-    type:"bar",
-    data:{
-      labels: top10.map(e => e[0].length > 22 ? e[0].slice(0,22)+"…" : e[0]),
-      datasets:[{ data: top10.map(e=>e[1]), backgroundColor:"#d9963f", borderRadius:3 }]
-    },
-    options:{
-      indexAxis:"y", responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false},
-        tooltip:{ callbacks:{ label: ctx => fmtNum(ctx.parsed.x) + " kg" } } },
-      scales:{
-        x:{ grid:{color:"#22282c"}, ticks:{ callback:v=>fmtNum(v) } },
-        y:{ grid:{display:false} }
-      }
-    }
-  });
-}
-
-function renderFormula(outRows){
-  const byFormula = {};
-  outRows.forEach(r=>{
-    const key = r.formulaName || r.formulaCode;
-    byFormula[key] = (byFormula[key]||0) + Math.abs(r.qty);
-  });
-  const entries = Object.entries(byFormula).sort((a,b)=>b[1]-a[1]).slice(0,12);
-  if(formulaChart) formulaChart.destroy();
-  formulaChart = new Chart(document.getElementById("formulaChart"), {
-    type:"bar",
-    data:{
-      labels: entries.map(e=>e[0]),
-      datasets:[{ data: entries.map(e=>e[1]), backgroundColor:"#4a8f85", borderRadius:3 }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false},
-        tooltip:{ callbacks:{ label: ctx => fmtNum(ctx.parsed.y) + " kg" } } },
-      scales:{
-        x:{ grid:{display:false}, ticks:{ autoSkip:false, maxRotation:40, minRotation:40 } },
-        y:{ grid:{color:"#22282c"}, ticks:{ callback:v=>fmtNum(v) } }
-      }
-    }
-  });
-}
-
-function renderLog(rows){
-  const sorted = [...rows].sort((a,b)=>b.date-a.date).slice(0,300);
-  const body = document.getElementById("logBody");
-  const q = document.getElementById("searchBox").value.trim().toLowerCase();
-  const filtered = q ? sorted.filter(r =>
-    (r.desc||"").toLowerCase().includes(q) ||
-    (r.item||"").toLowerCase().includes(q) ||
-    (r.formulaName||"").toLowerCase().includes(q) ||
-    (r.leader||"").toLowerCase().includes(q)
-  ) : sorted;
-
-  if(!filtered.length){
-    body.innerHTML = '<tr><td colspan="7" class="empty">Không có dữ liệu phù hợp</td></tr>';
-    return;
+  table('ftTable',[['Công thức'],['Tên FT'],['Loại da'],['Lượt FT_IN',1],['Nhập FT · kg',1],['Xuất FT · kg',1],['Hóa chất · kg',1]],
+    a.map(r=>['<button class="code" data-ft-detail="'+esc(r.code)+'" title="Xem chi tiết FT">'+esc(r.code)+'</button>',esc(r.name),esc([...r.leathers].join(', ')),fmt(r.n,0),fmt(r.ft),fmt(r.out),fmt(r.chem)]));
+  const detail=$('ftDetail');
+  if(detail?.dataset.code && !a.some(r=>r.code===detail.dataset.code)){
+    detail.hidden=true;detail.innerHTML='';delete detail.dataset.code;
   }
-  body.innerHTML = filtered.map(r => `
-    <tr>
-      <td>${fmtDate(r.date)}</td>
-      <td>${r.type === "CHEM_OUT" ? "Xuất" : "Nhập"}</td>
-      <td>${r.item||""}</td>
-      <td class="name">${r.desc||""}</td>
-      <td class="${r.type==='CHEM_OUT'?'qty-out':'qty-in'}">${r.qty>0?"+":""}${fmtNum(r.qty)}</td>
-      <td>${r.formulaName||""}</td>
-      <td>${r.leader||""}</td>
-    </tr>
-  `).join("");
+}
+function renderFTDetail(code){
+  const detail=$('ftDetail');
+  if(!detail)return;
+  const source=filtered.filter(r=>r.ft===code);
+  if(!source.length){detail.hidden=true;return}
+  const ftRows=source.filter(r=>r.type==='FT_IN');
+  const outRows=source.filter(r=>r.type==='FT_OUT');
+  const chemRows=source.filter(r=>r.type==='CHEM_OUT');
+  const name=source.find(r=>r.ftName)?.ftName||'';
+  const leatherMap=new Map();
+  for(const r of ftRows) leatherMap.set(r.leather,(leatherMap.get(r.leather)||0)+r.qty);
+  const chemMap=new Map();
+  for(const r of chemRows){
+    const key=r.item||r.name||'Chưa xác định';
+    const old=chemMap.get(key)||{item:r.item,name:r.name,qty:0};
+    old.qty+=-r.qty;chemMap.set(key,old);
+  }
+  const totalFT=sum(ftRows,r=>r.qty),totalOut=sum(outRows,r=>-r.qty),totalChem=sum(chemRows,r=>-r.qty);
+  const leatherRows=[...leatherMap].sort((a,b)=>b[1]-a[1]);
+  const chemData=[...chemMap.values()].sort((a,b)=>b.qty-a.qty);
+  detail.dataset.code=code;detail.hidden=false;
+  detail.innerHTML='<div class="ft-detail-head"><div><div class="eyebrow">CHI TIẾT CÔNG THỨC</div><div class="ft-detail-title">'+esc(code)+(name?' · '+esc(name):'')+'</div><div class="sub">Dữ liệu theo bộ lọc ngày và bộ lọc hiện tại của tab Phân tích FT.</div></div><button type="button" data-ft-detail-close>Đóng</button></div>'+
+    '<div class="ft-detail-grid"><div class="ft-detail-card"><div class="label">Số lượng FT nhập</div><strong>'+fmt(totalFT)+' kg</strong><div class="sub">'+fmt(ftRows.length,0)+' lượt FT_IN</div></div><div class="ft-detail-card"><div class="label">Hóa chất tạo FT</div><strong>'+fmt(totalChem)+' kg</strong><div class="sub">'+fmt(chemData.length,0)+' loại hóa chất</div></div><div class="ft-detail-card"><div class="label">FT xuất</div><strong>'+fmt(totalOut)+' kg</strong><div class="sub">'+fmt(outRows.length,0)+' lượt FT_OUT</div></div></div>'+
+    '<h3>Loại da theo FT</h3><div class="ft-detail-table" style="margin-top:10px">'+(leatherRows.length?'<table><thead><tr><th>Loại da</th><th class="num">Số lượng FT · kg</th></tr></thead><tbody>'+leatherRows.map(([l,v])=>'<tr><td>'+esc(l)+'</td><td class="num">'+fmt(v)+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">Không có dữ liệu loại da.</div>')+'</div>'+
+    '<h3 style="margin-top:20px">Hóa chất tạo nên FT</h3><div class="ft-detail-table" style="margin-top:10px">'+(chemData.length?'<table><thead><tr><th>Item Number</th><th>Tên hóa chất</th><th class="num">Số lượng · kg</th></tr></thead><tbody>'+chemData.map(r=>'<tr><td>'+esc(r.item||'—')+'</td><td>'+esc(r.name||'—')+'</td><td class="num">'+fmt(r.qty)+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">Không có CHEM_OUT gắn với FT này trong phạm vi dữ liệu đang chọn.</div>')+'</div>';
+  detail.scrollIntoView({behavior:typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'nearest'});
+}
+function populateFTFilters(){
+  const lf=$('ftLeatherFilter'),ff=$('ftFormulaFilter');
+  if(!lf||!ff)return;
+  const oldL=lf.value,oldF=ff.value;
+  lf.innerHTML='<option value="">Tất cả loại da</option>'+unique(rows.map(r=>r.leather)).map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('');
+  const fm=new Map(rows.filter(r=>r.ft).map(r=>[r.ft,r.ftName||'']));
+  ff.innerHTML='<option value="">Tất cả FT</option>'+[...fm].sort().map(([v,n])=>'<option value="'+esc(v)+'">'+esc(v)+(n?' · '+esc(n):'')+'</option>').join('');
+  if([...lf.options].some(o=>o.value===oldL))lf.value=oldL;
+  if([...ff.options].some(o=>o.value===oldF))ff.value=oldF;
 }
 
-document.querySelectorAll(".tab").forEach(tab=>{
-  tab.addEventListener("click", ()=>{
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
-    tab.classList.add("active");
-    currentRange = tab.dataset.range;
-    render();
-  });
-});
-document.getElementById("searchBox").addEventListener("input", ()=> render());
-document.getElementById("refreshBtn").addEventListener("click", loadData);
+let chemFocus='',chemBatchPage=0;
+const batchKey=r=>JSON.stringify([r.tx,r.ft]);
+const groupKey=r=>JSON.stringify([r.ft,r.leather]);
+function chemicalAnalysis(selected,scope=filtered,source=rows){const entries=scope.filter(r=>r.type==='CHEM_OUT'&&r.item===selected),ftIndex=new Map();for(const r of source.filter(r=>r.type==='FT_IN')){const key=batchKey(r);if(!ftIndex.has(key))ftIndex.set(key,[]);ftIndex.get(key).push(r)}const groups=new Map();for(const r of entries){const id=groupKey(r);if(!groups.has(id))groups.set(id,{id,ft:r.ft,leather:r.leather,name:r.ftName,total:0,matchedChem:0,denominator:0,batches:new Map(),unmatched:0,unmatchedRows:0});const g=groups.get(id);g.total-=r.qty;const key=batchKey(r);if(!g.batches.has(key)){const inputs=ftIndex.get(key)||[],match=r.tx&&r.ft&&inputs.length===1&&inputs[0].qty>0?inputs[0]:null;g.batches.set(key,{key,chem:0,ft:match,entry:r})}g.batches.get(key).chem-=r.qty}for(const g of groups.values()){g.ratios=[];for(const b of g.batches.values()){if(b.ft){g.denominator+=b.ft.qty;g.matchedChem+=b.chem;g.ratios.push(b.chem/b.ft.qty*100)}else{g.unmatched++;g.unmatchedRows+=entries.filter(r=>batchKey(r)===b.key&&groupKey(r)===g.id).length}}g.ratio=g.denominator>0?g.matchedChem/g.denominator*100:null}return [...groups.values()].sort((a,b)=>b.total-a.total)}
+function selectChemical(value){$('chemSelect').value=value;chemFocus='';chemBatchPage=0;renderChemical()}
+function renderChemical(){const all=filtered.filter(r=>r.type==='CHEM_OUT'),m=new Map();for(const r of all){if(!m.has(r.item))m.set(r.item,{name:r.name,qty:0,n:0,ft:new Set()});const v=m.get(r.item);v.qty-=r.qty;v.n++;v.ft.add(r.ft)}const sorted=[...m].sort((a,b)=>b[1].qty-a[1].qty),q=$('chemFind').value.trim().toLowerCase(),selected=$('chemSelect').value;$('chemListCount').textContent=m.size+' mã trong phạm vi bộ lọc';const listed=sorted.filter(([k,v])=>(k+' '+v.name).toLowerCase().includes(q));$('chemList').innerHTML=listed.length?listed.map(([k,v])=>'<button class="chem-item" data-chemical="'+esc(k)+'" aria-pressed="'+(k===selected)+'"><div class="chem-item-top"><span class="code">'+esc(k)+'</span><span class="chem-item-qty">'+fmt(v.qty)+' kg</span></div><div class="chem-item-name">'+esc(v.name)+'</div></button>').join(''):'<div class="empty">Không tìm thấy hóa chất.</div>';$('chemRecipePanel').hidden=true;$('chemMatchNotice').hidden=true;$('chemBack').hidden=!chemFocus;
+if(!selected){$('chemCode').textContent='CHEMICAL INSIGHTS';$('chemTitle').textContent='Hóa chất trong kỳ';$('chemSummary').textContent='Bấm mã hóa chất để xem các FT sử dụng và tỷ lệ pha thực tế.';$('chemMetrics').innerHTML='';table('chemTable',[['Mã hóa chất'],['Tên hóa chất'],['Xuất ròng · kg',1],['Số FT',1]],sorted.map(([k,v])=>['<button class="code" data-chemical="'+esc(k)+'">'+esc(k)+'</button>',esc(v.name),fmt(v.qty),v.ft.size]));return}
+const groups=chemicalAnalysis(selected),item=m.get(selected),matchedFT=sum(groups,g=>g.denominator),unmatched=sum(groups,g=>g.unmatched),matchedCount=sum(groups,g=>[...g.batches.values()].filter(b=>b.ft).length);$('chemCode').textContent=selected;$('chemTitle').textContent=item?.name||'Không có giao dịch trong bộ lọc này';$('chemSummary').textContent='Chọn FT bên dưới để xem thành phần pha và từng mẻ; danh sách bên trái luôn giữ nguyên.';$('chemMetrics').innerHTML=[['Đã xuất dùng',fmt(item?.qty||0)+' kg','Qty xuất ròng của hóa chất này'],['FT sử dụng',unique(groups.map(g=>g.ft)).length+' FT',groups.length+' tổ hợp FT / loại da'],['Khối lượng FT đối ứng',fmt(matchedFT)+' kg',matchedCount+' mẻ ghép được, tính mỗi mẻ một lần']].map(([label,value,note])=>'<div class="chem-stat"><div class="sub">'+label+'</div><strong>'+value+'</strong><div class="sub">'+note+'</div></div>').join('');if(unmatched){$('chemMatchNotice').hidden=false;$('chemMatchNotice').textContent=unmatched+' mẻ thiếu FT_IN hợp lệ hoặc có nhiều dòng FT_IN cùng mã mẻ. Khối lượng hóa chất vẫn hiện; các mẻ này được loại khỏi mẫu số và tử số tính tỷ lệ.'}
+const ratioCell=g=>g.ratio===null?'—':'<span class="ratio-cell"><span class="ratio-track"><span class="ratio-fill" style="display:block;width:'+Math.min(100,Math.max(0,g.ratio))+'%"></span></span>'+fmt(g.ratio,3)+'%</span>';
+table('chemTable',[['FT / loại da'],['Hóa chất · kg',1],['FT đối ứng · kg',1],['Tỷ lệ thực tế',1],['kg / 100 kg FT',1],['Khoảng tỷ lệ từng mẻ',1],['Chi tiết']],groups.map(g=>['<span class="code">'+esc(g.ft)+'</span><div class="sub">'+esc(g.leather)+'</div>',fmt(g.total,3),fmt(g.denominator,3),ratioCell(g),g.ratio===null?'—':fmt(g.ratio,3),g.ratios.length?fmt(Math.min(...g.ratios),3)+'–'+fmt(Math.max(...g.ratios),3)+'%':'—','<button class="ft-detail-button" data-chem-ft="'+esc(g.id)+'" aria-pressed="'+(chemFocus===g.id)+'">'+(chemFocus===g.id?'Đang xem':'Xem pha FT')+'</button>']));
+const focus=groups.find(g=>g.id===chemFocus);if(focus)renderChemicalRecipe(focus,selected);else if(chemFocus){chemFocus='';$('chemBack').hidden=true}}
+function renderChemicalRecipe(g,selected){$('chemRecipePanel').hidden=false;$('chemBack').hidden=false;const valid=[...g.batches.values()].filter(b=>b.ft),keys=new Set(valid.map(b=>b.key)),ingredients=rows.filter(r=>r.type==='CHEM_OUT'&&keys.has(batchKey(r))),composition=new Map();for(const r of ingredients){if(!composition.has(r.item))composition.set(r.item,{name:r.name,qty:0});composition.get(r.item).qty-=r.qty}const total=sum([...composition.values()],x=>x.qty),diff=total-g.denominator;$('chemRecipeTitle').textContent=g.ft+' · '+g.leather;$('chemRecipeSub').textContent=(g.name||'')+' · '+valid.length+' mẻ có dùng '+selected+' · '+fmt(g.denominator)+' kg FT';$('chemRecipeNote').textContent='Thành phần thực tế của các mẻ đang chọn. Tổng hóa chất: '+fmt(total,3)+' kg; chênh lệch so với FT: '+signed(diff)+' kg. Không chuẩn hóa tỷ lệ về 100%; nước cũng được tính nếu có ghi nhận.';table('chemRecipeTable',[['Hóa chất'],['Tên'],['Lượng dùng · kg',1],['% khối lượng FT',1],['kg / 100 kg FT',1],['kg / 1.000 kg FT',1]],[...composition].sort((a,b)=>b[1].qty-a[1].qty).map(([k,v])=>[k===selected?'<span class="chem-selected">'+esc(k)+' · Đang chọn</span>':'<button class="code" data-chemical="'+esc(k)+'">'+esc(k)+'</button>',esc(v.name),fmt(v.qty,3),g.denominator>0?fmt(v.qty/g.denominator*100,3)+'%':'—',g.denominator>0?fmt(v.qty/g.denominator*100,3):'—',g.denominator>0?fmt(v.qty/g.denominator*1000,3):'—']));const batches=[...g.batches.values()].sort((a,b)=>b.entry.date.localeCompare(a.entry.date)||b.entry.line-a.entry.line),pages=Math.max(1,Math.ceil(batches.length/20));chemBatchPage=Math.min(chemBatchPage,pages-1);table('chemBatchTable',[['Ngày'],['Chứng từ FT'],['Hóa chất · kg',1],['FT · kg',1],['Tỷ lệ',1],['Người ghi nhận']],batches.slice(chemBatchPage*20,chemBatchPage*20+20).map(b=>[esc(b.entry.date),esc(b.ft?.doc||'Không ghép được'),fmt(b.chem,3),b.ft?fmt(b.ft.qty,3):'—',b.ft?fmt(b.chem/b.ft.qty*100,3)+'%':'—',esc(b.entry.leader)]));$('chemBatchPageInfo').textContent=batches.length+' mẻ · Trang '+(chemBatchPage+1)+' / '+pages;$('chemBatchPrev').disabled=!chemBatchPage;$('chemBatchNext').disabled=chemBatchPage>=pages-1}
+function renderRecords(){
+  const q=$('search').value.trim().toLowerCase();
+  const a=filtered.filter(r=>r.type==='FT_IN' && (!q||[r.item,r.name,r.ft,r.doc,r.leader,r.tx,r.remark].join(' ').toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date)||b.line-a.line);
+  const pages=Math.max(1,Math.ceil(a.length/25));
+  page=Math.min(page,pages-1);
+  table('recordsTable',[['Ngày'],['FT'],['Loại da'],['Mã hàng'],['Tên'],['Qty · kg',1],['Doc. Number'],['Trạng thái hệ thống'],['Leader'],['Ghi chú']],
+    a.slice(page*25,page*25+25).map(r=>{
+      const hasDoc=String(r.doc||'').trim()!=='';
+      const status=hasDoc ? '<span class="system-status system-done">Đã làm hệ thống</span>' : '<span class="system-status system-missing">Chưa làm hệ thống</span>';
+      return [esc(r.date),'<span class="code">'+esc(r.ft)+'</span>',esc(r.leather),esc(r.item),esc(r.name),fmt(r.qty,5),hasDoc?esc(r.doc):'<span class="muted">—</span>',status,esc(r.leader),esc(r.remark)];
+    }));
+  $('pageInfo').textContent=fmt(a.length,0)+' dòng FT_IN · Trang '+(page+1)+' / '+pages;
+  $('prev').disabled=page===0;
+  $('next').disabled=page>=pages-1;
+}
+for(const id of ['from','to','leather','formula'])$(id).addEventListener('change',apply);$('grain').onchange=renderTrend;$('chemSelect').onchange=()=>selectChemical($('chemSelect').value);$('search').addEventListener('input',()=>{page=0;renderRecords()});$('prev').onclick=()=>{page--;renderRecords()};$('next').onclick=()=>{page++;renderRecords()};$('refresh').onclick=refresh;
+const tabFilterState={ft:null,stock:null,records:null};
+let activeTab='ft';
+function clearMainFilters(){for(const id of ['leather','formula'])$(id).value='';closePicker();updateSelection();}
+function captureTabFilters(){return Object.fromEntries(['leather','formula'].map(id=>[id,$(id).value]));}
+function saveTabFilters(tab){tabFilterState[tab]=captureTabFilters();}
+function restoreTabFilters(tab){const state=tabFilterState[tab];if(!state){clearMainFilters();return}for(const id of ['leather','formula'])$(id).value=state[id]||'';closePicker();updateSelection();}
+function switchTab(button){saveTabFilters(activeTab);activeTab=button.dataset.tab;restoreTabFilters(activeTab);for(const t of document.querySelectorAll('[data-tab]')){const active=t===button;t.setAttribute('aria-selected',active);$(t.dataset.tab).hidden=!active}apply(false);}
+for(const b of document.querySelectorAll('[data-tab]'))b.onclick=()=>switchTab(b);
+for(const b of document.querySelectorAll('[data-range]'))b.onclick=()=>{if(!rows.length)return;let latest=rows.map(r=>r.date).sort().at(-1);if(b.dataset.range==='all'){$('from').value='';$('to').value=''}else{$('to').value=latest;let d=new Date(latest+'T00:00:00Z');if(b.dataset.range==='month')d.setUTCDate(1);else d.setUTCDate(d.getUTCDate()-29);$('from').value=d.toISOString().slice(0,10)}apply()};
+if(document.modelContext?.registerTool){try{Promise.resolve(document.modelContext.registerTool({name:'read_ft_dashboard',description:'Read current filtered FT and chemical totals from Consumed_Log.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},execute:input=>{if(input&&Object.keys(input).length)throw Error('No arguments expected');return{loaded,lastSuccess:lastSuccess?.toISOString(),filters:{from:$('from').value,to:$('to').value,leather:chosen('leather'),formula:chosen('formula')},rowCount:filtered.length,ftKg:sum(filtered.filter(r=>r.type==='FT_IN'),r=>r.qty),chemicalKg:sum(filtered.filter(r=>r.type==='CHEM_OUT'),r=>-r.qty)}}})).catch(()=>{})}catch{}}
+function updateSelection(){const names={from:'Từ',to:'Đến',leather:'Da',formula:'FT'},chips=[];for(const id of ['from','to','leather','formula'])for(const v of (id==='from'||id==='to'?[$(id).value].filter(Boolean):chosen(id)))chips.push('<button class="chip" data-clear="'+id+'" data-remove="'+esc(v)+'" aria-label="Bỏ lọc '+esc(v)+'">'+names[id]+': '+esc(v)+' ×</button>');$('selection').hidden=!chips.length;$('selection').innerHTML=chips.join('');if($('undo'))$('undo').disabled=!filterHistory.length;for(const id of ['leather','formula'])updatePickerLabel(id);for(const b of document.querySelectorAll('[data-range]'))b.classList.toggle('active',b.dataset.range==='all'&&!$('from').value&&!$('to').value)}
+function captureFilters(){return Object.fromEntries(['from','to','leather','formula'].map(id=>[id,$(id).value]))}
+function rememberFilters(){const current=captureFilters();if(JSON.stringify(current)!==JSON.stringify(lastFilter)){filterHistory.push({...lastFilter});if(filterHistory.length>40)filterHistory.shift();lastFilter=current}}
+function undoFilters(){if(!filterHistory.length)return;closePicker();const previous=filterHistory.pop();for(const [id,v]of Object.entries(previous))$(id).value=v;lastFilter={...previous};apply(false)}
+function updatePickerLabel(id){const el=$(id+'Trigger');if(!el)return;const a=chosen(id);el.textContent=!a.length?(id==='leather'?'Tất cả loại da ▾':'Tất cả FT ▾'):a.length===1?a[0]+' ▾':a.length+' mục đã chọn ▾'}
+function closePicker(focus=false){if(!openPicker)return;const id=openPicker;$(id+'Popup').hidden=true;$(id+'Trigger').setAttribute('aria-expanded','false');openPicker=null;if(focus)$(id+'Trigger').focus()}
+function openFilter(id){if(openPicker===id){closePicker();return}closePicker();openPicker=id;draft=[...chosen(id)];$(id+'Search').value='';$(id+'Popup').hidden=false;$(id+'Trigger').setAttribute('aria-expanded','true');renderPicker();$(id+'Search').focus()}
+function matchingOptions(id){const q=$(id+'Search').value.toLocaleLowerCase().trim();return pickerItems[id].filter(([v,l])=>(v+' '+l).toLocaleLowerCase().includes(q))}
+function renderPicker(){if(!openPicker)return;const id=openPicker,items=matchingOptions(id);$(id+'List').innerHTML=items.length?items.map(([v,l])=>'<label class="pick-option"><input type="checkbox" data-pick-value="'+esc(v)+'" '+(draft.includes(v)?'checked':'')+'><span>'+esc(v)+(l!==v?'<small>'+esc(l.replace(v+' · ',''))+'</small>':'')+'</span></label>').join(''):'<div class="sub" style="padding:15px">Không tìm thấy kết quả.</div>';$(id+'Count').textContent=draft.length?draft.length+' mục đã chọn':'Không giới hạn'}
+function pickerAction(action,id){if(openPicker!==id)return;if(action==='all'){draft=unique([...draft,...matchingOptions(id).map(x=>x[0])]);renderPicker()}if(action==='clear'){draft=[];renderPicker()}if(action==='cancel')closePicker(true);if(action==='apply'){$(id).value=draft.join('\u001f');closePicker(true);apply()}}
+let theme='dark';try{theme=localStorage.getItem('ft-dashboard-theme')||'dark'}catch{}function setTheme(t){theme=t==='light'?'light':'dark';document.documentElement.dataset.theme=theme;$('themeToggle').textContent=theme==='dark'?'☀ Sáng':'☾ Tối';$('themeToggle').setAttribute('aria-label',theme==='dark'?'Chuyển sang giao diện sáng':'Chuyển sang giao diện tối');try{localStorage.setItem('ft-dashboard-theme',theme)}catch{}}setTheme(theme);$('themeToggle').onclick=()=>setTheme(theme==='dark'?'light':'dark');
+function drill(target){const t=target.closest('[data-filter],[data-from],[data-clear]');if(!t)return;if(t.dataset.clear){const id=t.dataset.clear;if(t.dataset.remove&&['leather','formula'].includes(id))$(id).value=chosen(id).filter(v=>v!==t.dataset.remove).join('\u001f');else $(id).value='';apply()}else if(t.dataset.from){$('from').value=t.dataset.from;$('to').value=t.dataset.to;apply()}else if(t.dataset.filter){$(t.dataset.filter).value=t.dataset.value;if(t.dataset.filter==='chemSelect')selectChemical(t.dataset.value);else apply()}$('tooltip').hidden=true}
+document.addEventListener('click',e=>{const d=e.target.closest('[data-ft-detail]');if(d){renderFTDetail(d.dataset.ftDetail);return}if(e.target.closest('[data-ft-detail-close]')){$('ftDetail').hidden=true;return}drill(e.target)});document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.chart-point')){e.preventDefault();drill(e.target)}if(e.key==='Escape')$('tooltip').hidden=true;if(['ArrowLeft','ArrowRight'].includes(e.key)&&e.target.matches('[role=tab]')){e.preventDefault();const tabs=[...document.querySelectorAll('[role=tab]')],i=tabs.indexOf(e.target),next=tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length];next.click();next.focus()}});
+function showTip(t,x,y){$('tooltip').textContent=t.dataset.tip;$('tooltip').hidden=false;$('tooltip').style.left=Math.max(8,Math.min(x+15,window.innerWidth-270))+'px';$('tooltip').style.top=Math.max(8,Math.min(y+15,window.innerHeight-130))+'px'}
+document.addEventListener('pointermove',e=>{const t=e.target.closest('[data-tip]');if(t)showTip(t,e.clientX,e.clientY);else $('tooltip').hidden=true});document.addEventListener('focusin',e=>{const t=e.target.closest('[data-tip]');if(t){const r=t.getBoundingClientRect();showTip(t,r.x,r.y)}});document.addEventListener('focusout',()=>{$('tooltip').hidden=true});
 
-loadData();
-setInterval(loadData, 5*60*1000); // auto-refresh mỗi 5 phút
-</script>
-</body>
-</html>
+document.addEventListener('click',e=>{const trigger=e.target.closest('[data-picker]');if(trigger){openFilter(trigger.dataset.picker);return}const action=e.target.closest('[data-pick-action]');if(action){pickerAction(action.dataset.pickAction,action.dataset.pickId);return}if(openPicker&&!e.target.closest('.picker'))closePicker()});
+document.addEventListener('change',e=>{if(e.target.matches('[data-pick-value]')&&openPicker){const v=e.target.dataset.pickValue;draft=e.target.checked?unique([...draft,v]):draft.filter(x=>x!==v);$(openPicker+'Count').textContent=draft.length?draft.length+' mục đã chọn':'Không giới hạn'}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&openPicker){e.preventDefault();closePicker(true)}});
+const monthLabel=m=>m?m.slice(5)+'/'+m.slice(0,4):'—';
+function monthOptions(){const months=unique(rows.map(r=>r.date.slice(0,7)));for(const id of ['monthA','monthB']){const old=$(id).value;$(id).innerHTML=months.map(m=>'<option value="'+m+'">'+monthLabel(m)+'</option>').join('');$(id).value=months.includes(old)?old:(id==='monthB'?months.at(-1):months.at(-2)||months[0])||''}return months}
+function comparisonRows(month){return rows.filter(r=>r.date.startsWith(month)&&matches('leather',r.leather)&&matches('formula',r.ft))}
+function monthStats(a){const ft=a.filter(r=>r.type==='FT_IN'),chem=a.filter(r=>r.type==='CHEM_OUT');return{ft:sum(ft,r=>r.qty),chem:sum(chem,r=>-r.qty),n:ft.length}}
+function deltaPercent(a,b){return a===0?(b===0?'0%':'Không có nền so sánh'):((b-a)>0?'+':'')+fmt((b-a)/Math.abs(a)*100,1)+'%'}
+function signed(v){return (v>0?'+':'')+fmt(v)}
+function compareDetail(a,b,group,metric){const type=metric==='ft'?'FT_IN':'CHEM_OUT',m=new Map();for(const [i,list]of [[0,a],[1,b]])for(const r of list){if(r.type!==type)continue;const key=group==='chemical'?r.item:group==='leather'?r.leather:r.ft||'Chưa xác định',name=group==='chemical'?r.name:group==='ft'?r.ftName:'';if(!m.has(key))m.set(key,{key,name,a:0,b:0});m.get(key)[i?'b':'a']+=metric==='ft'?r.qty:-r.qty}return [...m.values()].sort((x,y)=>Math.abs(y.b-y.a)-Math.abs(x.b-x.a))}
+function renderComparison(){const months=monthOptions();if(!months.length){$('compareKpis').innerHTML='<div class="empty">Chưa có dữ liệu tháng.</div>';return}const ma=$('monthA').value,mb=$('monthB').value,a=comparisonRows(ma),b=comparisonRows(mb),sa=monthStats(a),sb=monthStats(b);const coverage=(m,list)=>{const d=unique(list.map(r=>r.date));return monthLabel(m)+': '+(d.length?d[0]+' → '+d.at(-1)+' · '+d.length+' ngày có giao dịch':'không có giao dịch phù hợp')};$('monthCoverage').textContent=coverage(ma,a)+' | '+coverage(mb,b)+'. Tổng theo dữ liệu đã ghi nhận; chưa xác nhận tháng đã đầy đủ.';$('compareKpis').innerHTML=[['FT nhập','ft','kg'],['Hóa chất xuất','chem','kg'],['Lượt FT_IN','n','lượt']].map(([name,k,unit])=>'<div class="compare-card"><h3>'+name+'</h3><div class="month-pair"><div><small>'+monthLabel(ma)+'</small><br><strong style="color:var(--blue)">'+fmt(sa[k])+'</strong></div><div><small>'+monthLabel(mb)+'</small><br><strong style="color:var(--teal)">'+fmt(sb[k])+'</strong></div></div><div class="delta">'+signed(sb[k]-sa[k])+' '+unit+'<span class="delta-pill">'+deltaPercent(sa[k],sb[k])+'</span></div></div>').join('');const group=$('compareGroup').value;if(group==='chemical')$('compareMetric').value='chem';$('compareMetric').disabled=group==='chemical';const metric=$('compareMetric').value,detail=compareDetail(a,b,group,metric),max=Math.max(1,...detail.flatMap(r=>[Math.abs(r.a),Math.abs(r.b)]));$('compareLegend').innerHTML='<span>Tháng gốc '+monthLabel(ma)+'</span><span>Đối chiếu '+monthLabel(mb)+'</span>';$('compareBars').innerHTML=detail.length?'<div class="sub">8 mục có chênh lệch tuyệt đối lớn nhất · kg</div>'+detail.slice(0,8).map(r=>'<div class="compare-row"><div class="row-label">'+esc(r.key)+'<div class="sub">'+esc(r.name)+'</div></div><div class="paired-bars">'+[r.a,r.b].map(v=>'<div class="paired-line"><div class="track"><div class="bar" style="width:'+Math.abs(v)/max*100+'%"></div></div><span>'+fmt(v)+'</span></div>').join('')+'</div></div>').join(''):'<div class="empty">Không có giao dịch phù hợp trong hai tháng.</div>';}
+for(const id of ['monthA','monthB','compareGroup','compareMetric'])$(id).addEventListener('change',renderComparison);
+for(const id of ['ftSearch','ftLeatherFilter','ftFormulaFilter'])$(id)?.addEventListener('input',renderFT);
+$('ftLeatherFilter')?.addEventListener('change',renderFT);$('ftFormulaFilter')?.addEventListener('change',renderFT);
+$('ftFilterReset')?.addEventListener('click',()=>{$('ftSearch').value='';$('ftLeatherFilter').value='';$('ftFormulaFilter').value='';renderFT()});
+$('stockSearch')?.addEventListener('input',renderStock);$('swapMonths').onclick=()=>{const a=$('monthA').value;$('monthA').value=$('monthB').value;$('monthB').value=a;renderComparison()};
+
+
+$('chemFind').addEventListener('input',()=>{const scroll=$('chemList').scrollTop;renderChemical();$('chemList').scrollTop=scroll});$('chemClear').onclick=()=>selectChemical('');$('chemBack').onclick=()=>{chemFocus='';chemBatchPage=0;renderChemical()};$('chemBatchPrev').onclick=()=>{chemBatchPage--;renderChemical()};$('chemBatchNext').onclick=()=>{chemBatchPage++;renderChemical()};
+document.addEventListener('click',e=>{const item=e.target.closest('[data-chemical]');if(item){const scroll=$('chemList').scrollTop;selectChemical(item.dataset.chemical);$('chemList').scrollTop=scroll;return}const detail=e.target.closest('[data-chem-ft]');if(detail){chemFocus=detail.dataset.chemFt;chemBatchPage=0;renderChemical();$('chemRecipePanel').scrollIntoView({behavior:typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}});
+
+setInterval(()=>{if($('auto').checked&&!document.hidden)refresh()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('auto').checked&&(!lastSuccess||Date.now()-lastSuccess>60000))refresh()});refresh();
+</script></body></html>
