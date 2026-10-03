@@ -62,10 +62,14 @@
 .ft-detail-table{width:100%;overflow:auto}
 @media(max-width:700px){.ft-detail{padding:14px}.ft-detail-grid{grid-template-columns:1fr}.ft-detail-head{align-items:center}}
 .system-status{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-weight:700;font-size:12px;white-space:nowrap}.system-done{color:#0b7a4b;background:#e8f7ef;border:1px solid #b9e8d0}.system-missing{color:#b42318;background:#fff0ef;border:1px solid #f2c2be}.muted{opacity:.55}
+</style>
+<style id="vn-date-picker-css">
+.date-display{width:100%;text-align:left;font-size:14px;min-height:42px;position:relative;padding-right:38px}.date-display:after{content:'▾';position:absolute;right:13px;color:var(--muted)}.date-display.has-value{color:var(--text)}.vn-calendar{position:fixed;z-index:200;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:#0008}.vn-calendar.open{display:flex}.vn-calendar-card{width:min(390px,calc(100vw - 28px));background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px #0008;padding:16px}.vn-calendar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.vn-calendar-title{font-size:18px;font-weight:650;text-transform:none}.vn-calendar-nav{display:flex;gap:6px}.vn-calendar-nav button{min-width:42px;min-height:42px;padding:6px;font-size:22px}.vn-week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:5px}.vn-week span{text-align:center;color:var(--muted);font-size:11px;font-weight:650;padding:6px 0}.vn-days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.vn-day{min-height:42px;padding:0;border:1px solid transparent;background:transparent;border-radius:10px;color:var(--text);font-size:14px}.vn-day:hover{background:var(--surface2);border-color:var(--line);transform:none}.vn-day.muted{color:#66758b}.vn-day.today{border-color:var(--teal)}.vn-day.selected{background:var(--teal);color:var(--bg);font-weight:700}.vn-calendar-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:14px}.vn-calendar-foot .vn-clear{color:var(--muted);background:transparent}.vn-calendar-foot .vn-ok{color:var(--teal)}
+@media(max-width:700px){.vn-calendar{align-items:flex-end;padding:0}.vn-calendar-card{width:100%;max-width:none;border-radius:20px 20px 0 0;padding:15px 14px calc(15px + env(safe-area-inset-bottom));}.vn-day{min-height:46px}.vn-calendar-title{font-size:17px}}
 </style></head><body>
 <header><div class="brand"><div class="logo">FT</div><div><div class="eyebrow">Consumed Log / Live dashboard</div><h1>FT & Hóa chất</h1></div></div><div class="header-actions"><button id="themeToggle" type="button" aria-label="Chuyển sang giao diện sáng">☀ Sáng</button></div></header>
 <main><div class="topline"><div id="status" class="status" role="status">Đang kết nối Consumed_Log…</div><div class="actions"><label><input id="auto" type="checkbox" checked>Tự cập nhật mỗi 60 giây</label><button id="refresh">Làm mới</button></div></div>
-<div class="filters"><div class="field"><label for="from">Từ ngày</label><input type="date" id="from" lang="vi-VN" aria-label="Từ ngày"></div><div class="field"><label for="to">Đến ngày</label><input type="date" id="to" lang="vi-VN" aria-label="Đến ngày"></div><input type="hidden" id="leather"><input type="hidden" id="formula"></div>
+<div class="filters"><div class="field"><label for="fromDisplay">Từ ngày</label><button type="button" class="date-display" id="fromDisplay" aria-label="Chọn ngày bắt đầu">Chọn ngày</button><input type="hidden" id="from" aria-hidden="true"></div><div class="field"><label for="toDisplay">Đến ngày</label><button type="button" class="date-display" id="toDisplay" aria-label="Chọn ngày kết thúc">Chọn ngày</button><input type="hidden" id="to" aria-hidden="true"></div><input type="hidden" id="leather"><input type="hidden" id="formula"></div>
 <div class="presets"><button data-range="all">Toàn bộ</button><button data-range="month">Tháng dữ liệu mới nhất</button><button data-range="30">30 ngày gần nhất</button><span id="rangeInfo">Ngày theo Key-in Date</span></div>
 <div class="selection" id="selection" aria-label="Bộ lọc đang áp dụng" hidden></div><div id="alert" class="notice" hidden role="alert"></div><div id="quality" class="notice" hidden></div>
 
@@ -95,7 +99,16 @@
 </section>
 <section id="records" role="tabpanel" aria-labelledby="tab-records" hidden><div class="panel"><div class="panelhead"><div><h2>Chi tiết giao dịch FT_IN</h2><div class="sub">Chỉ hiển thị giao dịch FT_IN · Qty giữ nguyên dấu từ nguồn</div></div><div class="smallfilters"><input id="search" placeholder="Tìm mã, tên, chứng từ…" aria-label="Tìm giao dịch FT_IN"></div></div><div id="recordsTable"></div><div class="pager"><span id="pageInfo"></span><div><button id="prev">Trước</button><button id="next">Sau</button></div></div></div></section>
 <div class="foot">Nguồn duy nhất: <strong>Consumed_Log</strong> · Đọc toàn bộ sheet, không phụ thuộc bộ lọc đang bật trong Google Sheets.<details><summary>Cách tính & phạm vi dữ liệu</summary><div class="method">FT nhập = tổng Qty của FT_IN. Hóa chất xuất ròng = − tổng Qty của CHEM_OUT; giao dịch hoàn có dấu ngược sẽ giảm lượng xuất. FT_OUT, nếu có, được trình bày riêng trong bảng FT. Không cộng Batch KG trên các dòng hóa chất. Số lượt FT là số dòng FT_IN, không phải số Transaction ID duy nhất. Loại da lấy từ phần trước dấu | đầu tiên của Transaction ID; giá trị thiếu được ghi Chưa xác định. Tỷ lệ hóa chất được ghép bằng Transaction ID + Formula Code, dùng Qty FT_IN dương và duy nhất của đúng mẻ; không dùng trung bình cộng các tỷ lệ. Mẻ không ghép được bị loại khỏi phép tính tỷ lệ. Dữ liệu không có diện tích da nên chưa tính g/SF. Hóa chất bao gồm cả nước nếu nguồn ghi nhận. Đơn vị khối lượng được hiểu là kg theo Batch KG. Chu kỳ đọc là 60 giây khi trang đang mở; Google có thể có độ trễ cập nhật. Khi đọc nguồn thất bại, giữ số liệu lần thành công gần nhất và hiển thị cảnh báo.</div></details></div>
-</main><div class="tooltip" id="tooltip" role="tooltip" hidden></div><script>
+</main><div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+<div id="vnCalendar" class="vn-calendar" aria-hidden="true">
+  <div class="vn-calendar-card" role="dialog" aria-modal="true" aria-label="Chọn ngày">
+    <div class="vn-calendar-head"><strong id="vnCalendarTitle" class="vn-calendar-title"></strong><div class="vn-calendar-nav"><button type="button" id="vnPrev" aria-label="Tháng trước">‹</button><button type="button" id="vnNext" aria-label="Tháng sau">›</button></div></div>
+    <div class="vn-week"><span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span></div>
+    <div id="vnDays" class="vn-days"></div>
+    <div class="vn-calendar-foot"><button type="button" class="vn-clear" id="vnClear">Xóa</button><button type="button" class="vn-ok" id="vnClose">Xong</button></div>
+  </div>
+</div>
+<script>
 'use strict';
 const SHEET_ID='1RA0dud03cWei4FllHZ8Qeg1fw1GagxOn9J3gfAiz56M',GID='0',CHECK_SHEET='Check sheet';
 const $=id=>document.getElementById(id),fmt=(v,d=2)=>new Intl.NumberFormat('vi-VN',{maximumFractionDigits:d}).format(v),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -292,4 +305,28 @@ $('chemFind').addEventListener('input',()=>{const scroll=$('chemList').scrollTop
 document.addEventListener('click',e=>{const item=e.target.closest('[data-chemical]');if(item){const scroll=$('chemList').scrollTop;selectChemical(item.dataset.chemical);$('chemList').scrollTop=scroll;return}const detail=e.target.closest('[data-chem-ft]');if(detail){chemFocus=detail.dataset.chemFt;chemBatchPage=0;renderChemical();$('chemRecipePanel').scrollIntoView({behavior:typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}});
 
 setInterval(()=>{if($('auto').checked&&!document.hidden)refresh()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('auto').checked&&(!lastSuccess||Date.now()-lastSuccess>60000))refresh()});refresh();
-</script></body></html>
+</script>\n<script id="vn-date-picker-js">
+(()=>{
+  const $d=id=>document.getElementById(id);
+  const names=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+  const pad=n=>String(n).padStart(2,'0');
+  const iso=(y,m,d)=>`${y}-${pad(m+1)}-${pad(d)}`;
+  const parse=v=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return null;const [y,m,d]=v.split('-').map(Number);return new Date(y,m-1,d)};
+  let target='from',view=new Date(),picked=null;
+  function label(v){const d=parse(v);return d?`${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()}`:'Chọn ngày';}
+  function syncLabels(){for(const id of ['from','to']){const b=$d(id+'Display'),v=$d(id).value;b.textContent=label(v);b.classList.toggle('has-value',!!v)}}
+  function render(){const y=view.getFullYear(),m=view.getMonth(),first=new Date(y,m,1),days=new Date(y,m+1,0).getDate(),offset=(first.getDay()+6)%7,selected=$d(target).value;let h='';for(let i=0;i<offset;i++)h+='<button type="button" class="vn-day muted" tabindex="-1"></button>';for(let day=1;day<=days;day++){const v=iso(y,m,day),today=iso(new Date().getFullYear(),new Date().getMonth(),new Date().getDate());h+=`<button type="button" class="vn-day${v===selected?' selected':''}${v===today?' today':''}" data-vn-date="${v}">${day}</button>`}$d('vnDays').innerHTML=h;$d('vnCalendarTitle').textContent=`${names[m]} ${y}`}
+  function open(id){target=id;const current=parse($d(id).value);view=current||new Date();picked=$d(id).value||null;render();$d('vnCalendar').classList.add('open');$d('vnCalendar').setAttribute('aria-hidden','false');document.body.style.overflow='hidden'}
+  function close(){ $d('vnCalendar').classList.remove('open');$d('vnCalendar').setAttribute('aria-hidden','true');document.body.style.overflow='';syncLabels()}
+  function set(v){$d(target).value=v;picked=v;render();syncLabels();if(typeof apply==='function')apply()}
+  $d('fromDisplay').addEventListener('click',()=>open('from'));$d('toDisplay').addEventListener('click',()=>open('to'));
+  $d('vnPrev').onclick=()=>{view.setMonth(view.getMonth()-1);render()};$d('vnNext').onclick=()=>{view.setMonth(view.getMonth()+1);render()};
+  $d('vnDays').addEventListener('click',e=>{const b=e.target.closest('[data-vn-date]');if(b)set(b.dataset.vnDate)});
+  $d('vnClear').onclick=()=>{$d(target).value='';picked=null;render();syncLabels();if(typeof apply==='function')apply()};$d('vnClose').onclick=close;
+  $d('vnCalendar').addEventListener('click',e=>{if(e.target===$d('vnCalendar'))close()});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$d('vnCalendar').classList.contains('open'))close()});
+  window.addEventListener('load',syncLabels);syncLabels();
+  window.syncVietnameseDateLabels=syncLabels;
+})();
+</script>
+</body></html>
