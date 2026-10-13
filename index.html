@@ -62,6 +62,13 @@
 .ft-detail-table{width:100%;overflow:auto}
 @media(max-width:700px){.ft-detail{padding:14px}.ft-detail-grid{grid-template-columns:1fr}.ft-detail-head{align-items:center}}
 .system-status{display:inline-flex;align-items:center;justify-content:center;padding:5px 9px;border-radius:999px;font-weight:700;font-size:12px;white-space:nowrap}.system-done{color:#0b7a4b;background:#e8f7ef;border:1px solid #b9e8d0}.system-missing{color:#b42318;background:#fff0ef;border:1px solid #f2c2be}.muted{opacity:.55}
+#recordsTable tr.rec-row{cursor:pointer}#recordsTable tr.rec-row:hover td{background:color-mix(in srgb,var(--teal) 8%,var(--surface))}#recordsTable tr.rec-row[aria-expanded=true] td{background:color-mix(in srgb,var(--teal) 12%,var(--surface))}#recordsTable tr.rec-row:focus-visible{outline:2px solid var(--teal);outline-offset:-2px}
+.rec-detail td{padding:14px 16px!important;background:var(--surface2);border-bottom:1px solid var(--line);white-space:normal!important}
+.rec-info{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:13px;margin-bottom:10px;color:var(--muted)}.rec-info b{color:var(--text);font-weight:600}
+.rec-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pdf-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:9px;background:var(--teal);color:#06231d;font-weight:700;text-decoration:none;font-size:14px}.pdf-btn:hover{filter:brightness(1.08)}
+.pdf-copy{padding:8px 12px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--text);cursor:pointer;font-size:13px}
+.rec-note{color:var(--muted);font-size:13px}
 </style>
 <style id="vn-date-picker-css">
 .date-display{width:100%;text-align:left;font-size:14px;min-height:42px;position:relative;padding-right:38px}.date-display:after{content:'▾';position:absolute;right:13px;color:var(--muted)}.date-display.has-value{color:var(--text)}.vn-calendar{position:fixed;z-index:200;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:#0008}.vn-calendar.open{display:flex}.vn-calendar-card{width:min(390px,calc(100vw - 28px));background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px #0008;padding:16px}.vn-calendar-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}.vn-calendar-title{font-size:18px;font-weight:650;text-transform:none}.vn-calendar-nav{display:flex;gap:6px}.vn-calendar-nav button{min-width:42px;min-height:42px;padding:6px;font-size:22px}.vn-week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:5px}.vn-week span{text-align:center;color:var(--muted);font-size:11px;font-weight:650;padding:6px 0}.vn-days{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.vn-day{min-height:42px;padding:0;border:1px solid transparent;background:transparent;border-radius:10px;color:var(--text);font-size:14px}.vn-day:hover{background:var(--surface2);border-color:var(--line);transform:none}.vn-day.muted{color:#66758b}.vn-day.today{border-color:var(--teal)}.vn-day.selected{background:var(--teal);color:var(--bg);font-weight:700}.vn-calendar-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:14px}.vn-calendar-foot .vn-clear{color:var(--muted);background:transparent}.vn-calendar-foot .vn-ok{color:var(--teal)}
@@ -115,7 +122,7 @@ const $=id=>document.getElementById(id),fmt=(v,d=2)=>new Intl.NumberFormat('vi-V
 let rows=[],filtered=[],loaded=false,busy=false,page=0,lastSuccess=null,checkRows=[],checkLoaded=false;
 const pickerItems={leather:[],formula:[]};let openPicker=null,draft=[],filterHistory=[],lastFilter={from:'',to:'',leather:'',formula:''};const chosen=id=>$(id).value?$(id).value.split('\u001f'):[];const matches=(id,v)=>!chosen(id).length||chosen(id).includes(v);
 function parseCSV(text){let result=[],row=[],cell='',quoted=false;for(let i=0;i<text.length;i++){let c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++}else quoted=!quoted}else if(c===','&&!quoted){row.push(cell);cell=''}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(x=>x!==''))result.push(row);row=[];cell=''}else cell+=c}if(quoted)throw Error('CSV chưa hoàn chỉnh');row.push(cell);if(row.some(x=>x!==''))result.push(row);return result}
-function normalize(text){const matrix=parseCSV(text.replace(/^\uFEFF/,'')),headers=matrix.shift()?.map(x=>x.trim())||[];for(const h of ['Key-in Date','Type','Item Number','Description','Qty','Formula Code','Transaction ID'])if(!headers.includes(h))throw Error('Nguồn không có cột '+h);let bad=0;const data=matrix.map((r,i)=>{const o=Object.fromEntries(headers.map((h,j)=>[h,r[j]??'']));const qty=o.Qty.trim()===''?NaN:Number(o.Qty);const date=o['Key-in Date'].trim();if(!Number.isFinite(qty)||!/^\d{4}-\d{2}-\d{2}$/.test(date)){bad++;return null}return{date,type:o.Type.trim(),item:o['Item Number'].trim(),name:o.Description,qty,ft:o['Formula Code'].trim(),ftName:o['Formula Name'],leather:o['Transaction ID'].split('|')[0].trim()||'Chưa xác định',leader:o.Leader,doc:(o['Doc No']??o['Doc Number']??o['doc.number']??o['Doc.number']??'').trim(),tx:o['Transaction ID'],remark:o.Remark,reportDate:(r[11]??'').trim(),line:i+2}}).filter(Boolean);return{data,bad}}
+function normalize(text){const matrix=parseCSV(text.replace(/^\uFEFF/,'')),headers=matrix.shift()?.map(x=>x.trim())||[];for(const h of ['Key-in Date','Type','Item Number','Description','Qty','Formula Code','Transaction ID'])if(!headers.includes(h))throw Error('Nguồn không có cột '+h);let bad=0;const data=matrix.map((r,i)=>{const o=Object.fromEntries(headers.map((h,j)=>[h,r[j]??'']));const qty=o.Qty.trim()===''?NaN:Number(o.Qty);const date=o['Key-in Date'].trim();if(!Number.isFinite(qty)||!/^\d{4}-\d{2}-\d{2}$/.test(date)){bad++;return null}return{date,type:o.Type.trim(),item:o['Item Number'].trim(),name:o.Description,qty,ft:o['Formula Code'].trim(),ftName:o['Formula Name'],leather:o['Transaction ID'].split('|')[0].trim()||'Chưa xác định',leader:o.Leader,doc:(o['Doc No']??o['Doc Number']??o['doc.number']??o['Doc.number']??'').trim(),tx:o['Transaction ID'],remark:o.Remark,reportDate:(r[11]??'').trim(),pdf:(o['PDF URL']??o['PDF Link']??o['PDF']??'').trim(),line:i+2}}).filter(Boolean);return{data,bad}}
 function normalizeCheck(text){
   const matrix=parseCSV(text.replace(/^\uFEFF/,''));
   if(!matrix.length) return [];
@@ -241,17 +248,56 @@ const ratioCell=g=>g.ratio===null?'—':'<span class="ratio-cell"><span class="r
 table('chemTable',[['FT / loại da'],['Hóa chất · kg',1],['FT đối ứng · kg',1],['Tỷ lệ thực tế',1],['kg / 100 kg FT',1],['Khoảng tỷ lệ từng mẻ',1],['Chi tiết']],groups.map(g=>['<span class="code">'+esc(g.ft)+'</span><div class="sub">'+esc(g.leather)+'</div>',fmt(g.total,3),fmt(g.denominator,3),ratioCell(g),g.ratio===null?'—':fmt(g.ratio,3),g.ratios.length?fmt(Math.min(...g.ratios),3)+'–'+fmt(Math.max(...g.ratios),3)+'%':'—','<button class="ft-detail-button" data-chem-ft="'+esc(g.id)+'" aria-pressed="'+(chemFocus===g.id)+'">'+(chemFocus===g.id?'Đang xem':'Xem pha FT')+'</button>']));
 const focus=groups.find(g=>g.id===chemFocus);if(focus)renderChemicalRecipe(focus,selected);else if(chemFocus){chemFocus='';$('chemBack').hidden=true}}
 function renderChemicalRecipe(g,selected){$('chemRecipePanel').hidden=false;$('chemBack').hidden=false;const valid=[...g.batches.values()].filter(b=>b.ft),keys=new Set(valid.map(b=>b.key)),ingredients=rows.filter(r=>r.type==='CHEM_OUT'&&keys.has(batchKey(r))),composition=new Map();for(const r of ingredients){if(!composition.has(r.item))composition.set(r.item,{name:r.name,qty:0});composition.get(r.item).qty-=r.qty}const total=sum([...composition.values()],x=>x.qty),diff=total-g.denominator;$('chemRecipeTitle').textContent=g.ft+' · '+g.leather;$('chemRecipeSub').textContent=(g.name||'')+' · '+valid.length+' mẻ có dùng '+selected+' · '+fmt(g.denominator)+' kg FT';$('chemRecipeNote').textContent='Thành phần thực tế của các mẻ đang chọn. Tổng hóa chất: '+fmt(total,3)+' kg; chênh lệch so với FT: '+signed(diff)+' kg. Không chuẩn hóa tỷ lệ về 100%; nước cũng được tính nếu có ghi nhận.';table('chemRecipeTable',[['Hóa chất'],['Tên'],['Lượng dùng · kg',1],['% khối lượng FT',1],['kg / 100 kg FT',1],['kg / 1.000 kg FT',1]],[...composition].sort((a,b)=>b[1].qty-a[1].qty).map(([k,v])=>[k===selected?'<span class="chem-selected">'+esc(k)+' · Đang chọn</span>':'<button class="code" data-chemical="'+esc(k)+'">'+esc(k)+'</button>',esc(v.name),fmt(v.qty,3),g.denominator>0?fmt(v.qty/g.denominator*100,3)+'%':'—',g.denominator>0?fmt(v.qty/g.denominator*100,3):'—',g.denominator>0?fmt(v.qty/g.denominator*1000,3):'—']));const batches=[...g.batches.values()].sort((a,b)=>b.entry.date.localeCompare(a.entry.date)||b.entry.line-a.entry.line),pages=Math.max(1,Math.ceil(batches.length/20));chemBatchPage=Math.min(chemBatchPage,pages-1);table('chemBatchTable',[['Ngày'],['Chứng từ FT'],['Hóa chất · kg',1],['FT · kg',1],['Tỷ lệ',1],['Người ghi nhận']],batches.slice(chemBatchPage*20,chemBatchPage*20+20).map(b=>[esc(b.entry.date),esc(b.ft?.doc||'Không ghép được'),fmt(b.chem,3),b.ft?fmt(b.ft.qty,3):'—',b.ft?fmt(b.chem/b.ft.qty*100,3)+'%':'—',esc(b.entry.leader)]));$('chemBatchPageInfo').textContent=batches.length+' mẻ · Trang '+(chemBatchPage+1)+' / '+pages;$('chemBatchPrev').disabled=!chemBatchPage;$('chemBatchNext').disabled=chemBatchPage>=pages-1}
+let openRecordLine=null;
+const safePdfUrl=u=>/^https:\/\/(drive|docs)\.google\.com\//.test(u||'')?u:'';
+function buildPdfMap(){const m=new Map();for(const r of rows){const u=safePdfUrl(r.pdf);if(u&&r.tx&&!m.has(r.tx))m.set(r.tx,u)}return m}
+function driveSearchHTML(r){
+  const id=String(r.tx||'').split('|').pop().trim();
+  if(!/^\d{8,}$/.test(id))return '<span class="rec-note">Chưa có link PDF cho giao dịch này.</span>';
+  const u='https://drive.google.com/drive/search?q='+encodeURIComponent(id);
+  return '<a class="pdf-btn" href="'+esc(u)+'" target="_blank" rel="noopener noreferrer">🔍 Tìm PDF trên Drive</a><span class="rec-note">Chưa có link trực tiếp. Drive sẽ tìm file PDF có chứa mã giao dịch '+esc(id)+' (cần đăng nhập tài khoản có quyền xem thư mục PDF; file mới có thể mất vài phút để Drive lập chỉ mục).</span>';
+}
+function recordDetailHTML(r,url){
+  const info='<div class="rec-info"><span><b>Transaction ID:</b> '+esc(r.tx||'—')+'</span><span><b>Leader:</b> '+esc(r.leader||'—')+'</span><span><b>FT:</b> '+esc(r.ft)+(r.ftName?' · '+esc(r.ftName):'')+'</span></div>';
+  const act=url
+    ?'<a class="pdf-btn" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">📄 Mở PDF phiếu pha trên Drive</a><button type="button" class="pdf-copy" data-url="'+esc(url)+'">Sao chép link</button>'
+    :driveSearchHTML(r);
+  return info+'<div class="rec-actions">'+act+'</div>';
+}
+function attachRecordRows(list){
+  const map=buildPdfMap(),trs=[...$('recordsTable').querySelectorAll('tbody tr')];
+  const closeDetail=()=>{$('recordsTable').querySelectorAll('tr.rec-detail').forEach(x=>x.remove());trs.forEach(t=>t.setAttribute('aria-expanded','false'))};
+  const open=(tr,r)=>{
+    closeDetail();
+    const d=document.createElement('tr'),td=document.createElement('td');
+    d.className='rec-detail';td.colSpan=tr.children.length;
+    td.innerHTML=recordDetailHTML(r,safePdfUrl(r.pdf)||map.get(r.tx)||'');
+    d.appendChild(td);tr.after(d);tr.setAttribute('aria-expanded','true');openRecordLine=r.line;
+    const cp=td.querySelector('.pdf-copy');
+    if(cp)cp.onclick=async()=>{try{await navigator.clipboard.writeText(cp.dataset.url);cp.textContent='Đã sao chép'}catch{window.prompt('Sao chép link:',cp.dataset.url)}};
+  };
+  trs.forEach((tr,i)=>{
+    const r=list[i];if(!r)return;
+    tr.classList.add('rec-row');tr.tabIndex=0;tr.setAttribute('aria-expanded','false');tr.title='Bấm để xem link PDF';
+    const toggle=()=>{if(tr.getAttribute('aria-expanded')==='true'){closeDetail();openRecordLine=null}else open(tr,r)};
+    tr.addEventListener('click',toggle);
+    tr.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
+    if(r.line===openRecordLine)open(tr,r);
+  });
+}
 function renderRecords(){
   const q=$('search').value.trim().toLowerCase();
   const a=filtered.filter(r=>r.type==='FT_IN' && (!q||[r.item,r.name,r.ft,r.doc,r.leader,r.tx,r.remark,r.reportDate].join(' ').toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date)||b.line-a.line);
   const pages=Math.max(1,Math.ceil(a.length/25));
   page=Math.min(page,pages-1);
+  const pageRows=a.slice(page*25,page*25+25);
   table('recordsTable',[['Ngày'],['FT'],['Loại da'],['Mã hàng'],['Tên'],['Qty · kg',1],['Doc. Number'],['Trạng thái hệ thống'],['Leader'],['Ghi chú'],['Ngày làm báo cáo']],
-    a.slice(page*25,page*25+25).map(r=>{
+    pageRows.map(r=>{
       const hasDoc=String(r.doc||'').trim()!=='';
       const status=hasDoc ? '<span class="system-status system-done">Đã làm hệ thống</span>' : '<span class="system-status system-missing">Chưa làm hệ thống</span>';
       return [esc(r.date),'<span class="code">'+esc(r.ft)+'</span>',esc(r.leather),esc(r.item),esc(r.name),fmt(r.qty,5),hasDoc?esc(r.doc):'<span class="muted">—</span>',status,esc(r.leader),esc(r.remark),esc(r.reportDate||'—')];
     }));
+  attachRecordRows(pageRows);
   $('pageInfo').textContent=fmt(a.length,0)+' dòng FT_IN · Trang '+(page+1)+' / '+pages;
   $('prev').disabled=page===0;
   $('next').disabled=page>=pages-1;
